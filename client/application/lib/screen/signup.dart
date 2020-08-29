@@ -1,17 +1,10 @@
-import 'package:application/src/network_image.dart';
-/**
- * Author: Damodar Lohani
- * profile: https://github.com/lohanidamodar
- */
-
 import 'package:flutter/material.dart';
+import 'package:application/utils/network_image.dart';
+import 'package:application/utils/assets.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
-import 'package:application/presentation/assets.dart';
-import 'package:application/login/signup.dart';
 
-
-class LoginTwoPage extends StatelessWidget {
-  static final String path = "lib/src/pages/login/login2.dart";
+class SignUp extends StatelessWidget {
+  static final String path = "lib/src/pages/login/signup1.dart";
   Widget _buildPageContent(BuildContext context) {
     return Container(
       color: Colors.blue.shade100,
@@ -22,15 +15,15 @@ class LoginTwoPage extends StatelessWidget {
           SizedBox(height: 20.0,),
           _buildLoginForm(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              FlatButton(
+              FloatingActionButton(
+                mini: true,
                 onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (BuildContext context) => SignupOnePage()
-                  ));
+                  Navigator.pop(context);
                 },
-                child: Text("Sign Up", style: TextStyle(color: Colors.blue, fontSize: 18.0)),
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.arrow_back),
               )
             ],
           )
@@ -62,7 +55,7 @@ class LoginTwoPage extends StatelessWidget {
                       child: TextField(
                         style: TextStyle(color: Colors.blue),
                         decoration: InputDecoration(
-                            hintText: "User name",
+                            hintText: "Username",
                             hintStyle: TextStyle(color: Colors.blue.shade200),
                             border: InputBorder.none,
                             icon: Icon(Icons.email, color: Colors.blue,)
@@ -84,16 +77,20 @@ class LoginTwoPage extends StatelessWidget {
                       )
                   ),
                   Container(child: Divider(color: Colors.blue.shade400,), padding: EdgeInsets.only(left: 20.0,right: 20.0, bottom: 10.0),),
-//                  Row(
-//                    mainAxisAlignment: MainAxisAlignment.end,
-//                    children: <Widget>[
-//                      Container(padding: EdgeInsets.only(right: 20.0),
-//                          child: Text("Forgot Password?",
-//                            style: TextStyle(color: Colors.black45),
-//                          )
-//                      )
-//                    ],
-//                  ),
+                  Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextField(
+                        style: TextStyle(color: Colors.blue),
+                        obscureText: true,
+                        decoration: InputDecoration(
+                            hintText: "Confirm password",
+                            hintStyle: TextStyle(color: Colors.blue.shade200),
+                            border: InputBorder.none,
+                            icon: Icon(Icons.lock, color: Colors.blue,)
+                        ),
+                      )
+                  ),
+                  Container(child: Divider(color: Colors.blue.shade400,), padding: EdgeInsets.only(left: 20.0,right: 20.0, bottom: 10.0),),
                   SizedBox(height: 10.0,),
 
                 ],
@@ -117,7 +114,7 @@ class LoginTwoPage extends StatelessWidget {
               child: RaisedButton(
                 onPressed: (){},
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
-                child: Text("Login", style: TextStyle(color: Colors.white70)),
+                child: Text("Sign Up", style: TextStyle(color: Colors.white70)),
                 color: Colors.blue,
               ),
             ),

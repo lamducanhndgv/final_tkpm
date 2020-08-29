@@ -1,10 +1,15 @@
+import 'package:application/utils/network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:application/src/network_image.dart';
-import 'package:application/presentation/assets.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
+import 'package:application/utils/assets.dart';
+import 'package:application/screen/signup.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
-class SignupOnePage extends StatelessWidget {
-  static final String path = "lib/src/pages/login/signup1.dart";
+
+class LoginPage extends StatelessWidget {
   Widget _buildPageContent(BuildContext context) {
     return Container(
       color: Colors.blue.shade100,
@@ -15,15 +20,15 @@ class SignupOnePage extends StatelessWidget {
           SizedBox(height: 20.0,),
           _buildLoginForm(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              FloatingActionButton(
-                mini: true,
+              FlatButton(
                 onPressed: (){
-                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (BuildContext context) => SignUp()
+                  ));
                 },
-                backgroundColor: Colors.blue,
-                child: Icon(Icons.arrow_back),
+                child: Text("Sign Up", style: TextStyle(color: Colors.blue, fontSize: 18.0)),
               )
             ],
           )
@@ -31,7 +36,8 @@ class SignupOnePage extends StatelessWidget {
       ),
     );
   }
-
+  TextEditingController usernameController = new TextEditingController();
+  TextEditingController passwordController = new TextEditingController();
   Container _buildLoginForm() {
     return Container(
       padding: EdgeInsets.all(15.0),
@@ -54,6 +60,7 @@ class SignupOnePage extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 20.0),
                       child: TextField(
                         style: TextStyle(color: Colors.blue),
+                        controller: usernameController,
                         decoration: InputDecoration(
                             hintText: "Username",
                             hintStyle: TextStyle(color: Colors.blue.shade200),
@@ -68,6 +75,7 @@ class SignupOnePage extends StatelessWidget {
                       child: TextField(
                         style: TextStyle(color: Colors.blue),
                         obscureText: true,
+                        controller: passwordController,
                         decoration: InputDecoration(
                             hintText: "Password",
                             hintStyle: TextStyle(color: Colors.blue.shade200),
@@ -77,20 +85,16 @@ class SignupOnePage extends StatelessWidget {
                       )
                   ),
                   Container(child: Divider(color: Colors.blue.shade400,), padding: EdgeInsets.only(left: 20.0,right: 20.0, bottom: 10.0),),
-                  Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: TextField(
-                        style: TextStyle(color: Colors.blue),
-                        obscureText: true,
-                        decoration: InputDecoration(
-                            hintText: "Confirm password",
-                            hintStyle: TextStyle(color: Colors.blue.shade200),
-                            border: InputBorder.none,
-                            icon: Icon(Icons.lock, color: Colors.blue,)
-                        ),
-                      )
-                  ),
-                  Container(child: Divider(color: Colors.blue.shade400,), padding: EdgeInsets.only(left: 20.0,right: 20.0, bottom: 10.0),),
+//                  Row(
+//                    mainAxisAlignment: MainAxisAlignment.end,
+//                    children: <Widget>[
+//                      Container(padding: EdgeInsets.only(right: 20.0),
+//                          child: Text("Forgot Password?",
+//                            style: TextStyle(color: Colors.black45),
+//                          )
+//                      )
+//                    ],
+//                  ),
                   SizedBox(height: 10.0,),
 
                 ],
@@ -112,9 +116,12 @@ class SignupOnePage extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: RaisedButton(
-                onPressed: (){},
+                onPressed: (){
+
+                  login(usernameController.text,passwordController.text);
+                },
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
-                child: Text("Sign Up", style: TextStyle(color: Colors.white70)),
+                child: Text("Login", style: TextStyle(color: Colors.white70)),
                 color: Colors.blue,
               ),
             ),
@@ -130,4 +137,9 @@ class SignupOnePage extends StatelessWidget {
       body: _buildPageContent(context),
     );
   }
+
+  void login(String text, String text2) {
+
+  }
+
 }
