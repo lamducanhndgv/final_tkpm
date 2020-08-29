@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,8 +12,9 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:async/async.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:application/utils/assets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-//import 'network.dart';
+import 'package:application/screen/Login.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,20 +22,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  SharedPreferences sharedPreferences;
+
+  // Attribute for home page
   File _imageFile;
   ProgressDialog pr;
   Uint8List _base64;
-
-  static String mIP = "http://192.168.1.4:8558/";
-
-  final Color color1 = Color.fromRGBO(252, 119, 3, 1);
-  final Color color2 = Color.fromRGBO(252, 244, 3, 1);
+  static String mIP =SERVER_URL;
+  final Color color1 = Colors.lightBlueAccent;//Color.fromRGBO(252, 119, 3, 1);
+  final Color color2 = Colors.blue;//Color.fromRGBO(252, 244, 3, 1);
   TextEditingController _c;
   TextEditingController _cServer;
   StringBuffer _urlPicture;
   Uri apiUrl = Uri.parse(mIP + "detection");
-
   bool _visible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  checkLoginStatus() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    if (sharedPreferences.getString("token") == null) {
+      Navigator.of(context).pushAndRemoveUntil(new
+          MaterialPageRoute(builder: (BuildContext context) => Login()),
+              (Route<dynamic> route) => false);
+    }
+  }
 
   void _openGallery(BuildContext context) async {
     var pickedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -119,7 +135,7 @@ class _HomePageState extends State<HomePage> {
     print('Header: ');
     print('length: ' + response.headers['listindex'].length.toString());
     if (response.headers['listindex'].length < 1) {
-      print('hhilllo');
+
       Fluttertoast.showToast(
           msg: "No object detected",
           toastLength: Toast.LENGTH_SHORT,
@@ -246,6 +262,7 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           margin: const EdgeInsets.only(top: 25),
                           child: FloatingActionButton(
+                            heroTag: 'ClickRemoteServer',
                             foregroundColor: Colors.black54,
                             backgroundColor: Colors.yellow[600],
                             elevation: 2.0,
@@ -292,6 +309,7 @@ class _HomePageState extends State<HomePage> {
                                   Container(
                                     margin: const EdgeInsets.only(left: 10),
                                     child: FloatingActionButton(
+                                      heroTag: 'Server',
                                       foregroundColor: Colors.black54,
                                       backgroundColor: Colors.yellow[600],
                                       elevation: 2.0,
@@ -421,6 +439,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Center(
                                   child: FloatingActionButton(
+                                    heroTag: 'Detection',
                                     child: Icon(
                                       Icons.remove_red_eye,
                                       color: Colors.pink,
