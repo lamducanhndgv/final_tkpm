@@ -1,8 +1,8 @@
 import 'package:application/screen/HomePage.dart';
-import 'package:application/utils/network_image.dart';
+import 'package:application/shared/network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
-import 'package:application/utils/assets.dart';
+import 'package:application/shared/assets.dart';
 import 'package:application/screen/SignUp.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:async';
@@ -203,12 +203,19 @@ class _LoginState extends State<Login> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     Map data = {'username': textUsername, 'password': textPassword};
     var jsonResponse = null;
-
-    var response = await http.post("$SERVER_URL/login", body: data);
-    if (response.statusCode == 200) {
+    // Set timeout for post request 15sec
+    var response = await http.post("$SERVER_URL/login", body: data).timeout(const Duration(seconds: 15), onTimeout: (){
+      print('time up');
+      setState(() {
+        _isLoading=false;
+      });
+      return null;
+    });
+    if (response!=null && response.statusCode == 200) {
+      print('response: ' +response.toString());
       jsonResponse = json.decode(response.body);
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+//      print('Response status: ${response.statusCode}');
+//      print('Response body: ${response.body}');
       if (jsonResponse != null) {
         Fluttertoast.showToast(
             msg: "Login success",

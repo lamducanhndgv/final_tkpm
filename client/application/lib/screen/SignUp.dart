@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:application/utils/network_image.dart';
-import 'package:application/utils/assets.dart';
+import 'package:application/shared/network_image.dart';
+import 'package:application/shared/assets.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -217,37 +218,36 @@ class _SignUpState extends State<SignUp> {
     });
 
     Map data = {'username': username, 'password': username};
-//    var jsonResponse = null;
-
-    var response = await http.post("$SERVER_URL/signup", body: data);
-    if (response.statusCode == 200) {
-      Fluttertoast.showToast(
-          msg: "Sign up success",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.blueAccent,
-          textColor: Colors.white,
-          fontSize: 16.0);
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (BuildContext context) => HomePage()),
-          (Route<dynamic> route) => false);
-    } else {
-      Fluttertoast.showToast(
-          msg: "Sign up failed",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.blueAccent,
-          textColor: Colors.white,
-          fontSize: 16.0);
-      setState(() {
-        _isLoading = false;
-      });
-      print(response.body);
+    try {
+      var response = await http.post("$SERVER_URL/signup", body: data);
+      if (response.statusCode == 200) {
+        showToast('Sign up success');
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (BuildContext context) => HomePage()),
+            (Route<dynamic> route) => false);
+      } else {
+        showToast('Sign up failed');
+        setState(() {
+          _isLoading = false;
+        });
+        print(response.body);
+      }
+    } on SocketException catch (e) {
+      print(e.toString());
     }
+  }
+
+  showToast(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.blueAccent,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 }

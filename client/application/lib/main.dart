@@ -1,8 +1,7 @@
+import 'package:application/module/signup/signup_page.dart';
 import 'package:application/screen/HomePage.dart';
-import 'package:application/screen/Login.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'module/signin/signin_page.dart';
 
 
 void main() {
@@ -12,7 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomePage(),
+      initialRoute: '/',
+       routes:<String,WidgetBuilder>{
+         '/': (context) => SignIn(),
+         '/login': (context)=>SignIn(),
+         '/register': (context)=>RegisterPage(),
+         '/home' : (context)=>HomePage(),
+       },
     );
   }
 }

@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:async/async.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:application/utils/assets.dart';
+import 'package:application/shared/assets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:application/screen/Login.dart';
