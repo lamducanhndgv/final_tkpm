@@ -1,4 +1,4 @@
-from flask import Flask, url_for, request, session, redirect
+from flask import Flask, url_for, request, session, redirect, jsonify
 from flask_pymongo import PyMongo
 import bcrypt
 import jwt
@@ -9,6 +9,10 @@ app.config['MONGO_DBNAME'] = 'tkpm_final'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/tkpm_final'
 
 mongo = PyMongo(app)
+
+# @app.route('/', methods=['GET'])
+# def index():
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -25,10 +29,14 @@ def login():
             encoded_jwt = jwt.encode({'id': str(login_user['_id'])}, 'secret', algorithm='HS256')
 
             # if success return token and http status code 200
-            return encoded_jwt,200
+            return jsonify(status=200,
+                            message='Login successfully!',
+                            token=str(encoded_jwt)),200
 
     # http status code 401
-    return 'Incorrect username or password',401
+    return jsonify(status=401, 
+                    message='Incorrect username or password'),401
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -43,10 +51,12 @@ def register():
         session['username'] = data['username']
 
         # http status code 200
-        return '',200
+        return jsonify(status=200,
+                        message='Register completed!'),200
     
     # http status code 400
-    return 'Username is already exists!',400
+    return jsonify(status=400,
+                    message='Username is already exists!'),400
 
 
 if __name__ == '__main__':
