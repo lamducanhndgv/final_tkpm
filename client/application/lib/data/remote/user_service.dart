@@ -1,4 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_app_book_store/network/book_client.dart';
+import 'package:application/network/server.dart';
 
-class UserService {}
+class UserService {
+  Future<Response> signIn(String user, String pass) {
+    print('Call sign in from user service');
+    return DetectClient.instance.dio.post(
+      '/login',
+      data: {
+        'username': user,
+        'password': pass,
+      },
+    );
+  }
+}
