@@ -31,7 +31,7 @@ def login():
             # if success return token and http status code 200
             return jsonify(status=200,
                             message='Login successfully!',
-                            token=str(encoded_jwt)),200
+                            token=encoded_jwt.decode('utf-8') ),200
 
     # http status code 401
     return jsonify(status=401, 
