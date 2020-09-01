@@ -25,7 +25,7 @@ class User {
     print('Factory user model from json:');
     return User(
 //        username: map['username'],
-        token: map['token'],);
+        token: map['token']);
 //        modelNames: map['modelnames']);
   }
 }

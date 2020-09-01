@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 
 class DetectClient {
   static BaseOptions _options = new BaseOptions(
-    baseUrl: "http://localhost:8888",
+    baseUrl: "http://192.168.1.9:8888",
+    
     connectTimeout: 5000,
     receiveTimeout: 3000,
   );

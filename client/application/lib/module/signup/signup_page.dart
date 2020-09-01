@@ -1,7 +1,13 @@
+import 'package:application/base/base_event.dart';
+import 'package:application/event/register_fail_event.dart';
+import 'package:application/event/register_success_event.dart';
+import 'package:application/event/signup_event.dart';
 import 'package:application/module/signup/signup_bloc.dart';
 import 'package:application/module/signup/signup_page.dart';
 import 'package:application/shared/assets.dart';
 import 'package:application/shared/network_image.dart';
+import 'package:application/shared/widget/bloc_listener.dart';
+import 'package:application/shared/widget/loading_task.dart';
 import 'package:flutter/material.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/user_service.dart';
@@ -47,38 +53,46 @@ class _SignupPageState extends State<SignupPage> {
     return Provider<SignUpBloc>.value(
       value: SignUpBloc(userRepo: Provider.of(context)),
       child: Consumer<SignUpBloc>(
-        builder: (context, bloc, child) => Container(
-          color: Colors.blue.shade100,
-          child: ListView(
-            children: <Widget>[
-              SizedBox(
-                height: 30.0,
-              ),
-              CircleAvatar(
-                child: PNetworkImage(origami),
-                maxRadius: 50,
-                backgroundColor: Colors.transparent,
-              ),
-              SizedBox(
-                height: 10.0,
-              ),
-              _buildLoginForm(bloc),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  FloatingActionButton(
-                    mini: true,
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.arrow_back),
-                  )
-                ],
+        builder: (context, bloc, child){
+          return BlocListener<SignUpBloc>(
+            listener: handleRegisterEvent,
+            child:LoadingTask(
+              bloc: bloc,
+              child:Container(
+                color: Colors.blue.shade100,
+                child: ListView(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    CircleAvatar(
+                      child: PNetworkImage(origami),
+                      maxRadius: 50,
+                      backgroundColor: Colors.transparent,
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    _buildLoginForm(bloc),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        FloatingActionButton(
+                          mini: true,
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          backgroundColor: Colors.blue,
+                          child: Icon(Icons.arrow_back),
+                        )
+                      ],
+                    )
+                  ],
+                ),
               )
-            ],
-          ),
-        ),
+            )
+          );
+        },
       ),
     );
   }
@@ -253,9 +267,14 @@ class _SignupPageState extends State<SignupPage> {
           child: Align(
             alignment: Alignment.bottomCenter,
             child: RaisedButton(
-              onPressed: enable ? () {
-                print('clicked');
-              } : null,
+              onPressed: enable
+                  ? () {
+                      print('clicked');
+                      bloc.event.add(SignUpEvent(
+                          username: usernameController.text,
+                          pass: passwordController.text));
+                    }
+                  : null,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(40.0)),
               child: Text("Sign Up", style: TextStyle(color: Colors.white70)),
@@ -265,5 +284,27 @@ class _SignupPageState extends State<SignupPage> {
         ),
       ),
     );
+  }
+
+  handleRegisterEvent(BaseEvent event) {
+    if(event is RegisterSuccess){
+      final snackBar= SnackBar(
+        content : Text('Register Success'),
+        backgroundColor: Colors.green,
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
+      Future.delayed(Duration(seconds: 3),(){
+        Navigator.pop(context);
+        return;
+      });
+    }
+    if(event is RegisterFail){
+      final snackBar= SnackBar(
+        content : Text(event.errMessage),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
+    }
   }
 }

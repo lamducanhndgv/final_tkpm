@@ -1,5 +1,5 @@
 import 'package:application/module/signup/signup_page.dart';
-import 'package:application/screen/HomePage.dart';
+import 'package:application/module/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'module/signin/signin_page.dart';
 

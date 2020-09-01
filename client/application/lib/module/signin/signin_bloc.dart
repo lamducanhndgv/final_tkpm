@@ -74,17 +74,18 @@ class SignInBloc extends BaseBloc {
   handleSignInEvent(event) {
     btnSink.add(false);
     loadingSink.add(true);
-
-    SignInEvent e = event as SignInEvent;
-    _userRepo.signIn(e.username, e.pass).then((user) {
-      print('user ne' + user.toString());
-      processSink.add(LoginSuccessEvent(user));
-    }, onError: (e) {
-      btnSink.add(true);
-      loadingSink.add(false);
-      processSink.add(LoginFailEvent(e.toString()));
-      print(e);
-    });
+//    Future.delayed(Duration(seconds: 5), () { //  DELETE THIS ROW
+      SignInEvent e = event as SignInEvent;
+      _userRepo.signIn(e.username, e.pass).then((user) {
+        print('user ne' + user.toString());
+        processSink.add(LoginSuccessEvent(user));
+      }, onError: (e) {
+        btnSink.add(true);
+        loadingSink.add(false);
+        processSink.add(LoginFailEvent(e.toString()));
+        print(e);
+      });
+//    });  // DELETE THIS ROW TOO
   }
 
   @override
@@ -95,4 +96,3 @@ class SignInBloc extends BaseBloc {
     _btnSubject.close();
   }
 }
-

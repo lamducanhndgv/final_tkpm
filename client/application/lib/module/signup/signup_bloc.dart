@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:application/base/base_bloc.dart';
 import 'package:application/base/base_event.dart';
 import 'package:application/data/repo/user_repo.dart';
+import 'package:application/event/register_fail_event.dart';
+import 'package:application/event/register_success_event.dart';
 import 'package:application/event/signup_event.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/cupertino.dart';
@@ -82,10 +84,16 @@ class SignUpBloc extends BaseBloc {
   }
 
   handleSignUpEvent(BaseEvent event) {
+    btnSink.add(false);
+    loadingSink.add(true);
     SignUpEvent e = event as SignUpEvent;
     _userRepo.signUp(e.username, e.pass).then((user) {
-      print('user ne' + user.toString());
+      loadingSink.add(false);
+      processSink.add(RegisterSuccess());
     }, onError: (e) {
+      btnSink.add(true);
+      loadingSink.add(false);
+      processSink.add(RegisterFail(e.toString()));
       print(e);
     });
   }

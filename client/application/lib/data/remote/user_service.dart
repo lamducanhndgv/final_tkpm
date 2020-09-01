@@ -12,4 +12,15 @@ class UserService {
       },
     );
   }
+
+  Future<Response> signUp(String user, String pass) {
+    print('Call sign up from user service');
+    return DetectClient.instance.dio.post(
+      '/register',
+      data: {
+        'username': user,
+        'password': pass,
+      },
+    );
+  }
 }

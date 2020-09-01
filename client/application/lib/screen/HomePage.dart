@@ -1,3 +1,6 @@
+import 'package:application/data/spref/spref.dart';
+import 'package:application/module/signin/signin_page.dart';
+import 'package:application/shared/constant.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:convert';
@@ -14,15 +17,12 @@ import 'package:photo_view/photo_view.dart';
 import 'package:application/shared/assets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:application/screen/Login.dart';
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  SharedPreferences sharedPreferences;
 
   // Attribute for home page
   File _imageFile;
@@ -44,10 +44,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   checkLoginStatus() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    if (sharedPreferences.getString("token") == null) {
+    var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
+    if (token == null) {
       Navigator.of(context).pushAndRemoveUntil(new
-          MaterialPageRoute(builder: (BuildContext context) => Login()),
+          MaterialPageRoute(builder: (BuildContext context) => SignIn()),
               (Route<dynamic> route) => false);
     }
   }
@@ -338,13 +338,6 @@ class _HomePageState extends State<HomePage> {
                       height: 550,
                       child: Column(
                         children: <Widget>[
-                          Text(
-                            "Default model detection",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontStyle: FontStyle.italic),
-                          ),
                           SizedBox(height: 20.0),
                           Expanded(
                             child: Stack(

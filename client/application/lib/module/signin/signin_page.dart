@@ -55,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       final snackBar= SnackBar(
         content : Text(event.errMessage),
         backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
       );
       Scaffold.of(context).showSnackBar(snackBar);
 
@@ -238,6 +239,9 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
               onChanged: (text) {
                 bloc.passwordSink.add(text);
+              },
+              onSubmitted: (text){
+
               },
               //Set listener for password
               controller: _passwordController,

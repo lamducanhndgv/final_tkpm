@@ -20,37 +20,41 @@ class UserRepo {
     var c = Completer<User>();
     try {
       var response = await _userService.signIn(username, pass);
-      print('response data in repo sign in: '+ response.data);
-      var user = User.fromJson(response.data['data']);
+      var user = User.fromJson(response.data);
       if (user != null) {
+
         SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
         c.complete(user);
       }
     } on DioError catch (e) {
       print(e.response.data);
-      c.completeError('Login Error');
-    } catch (e) {
+      c.completeError('${e.response.data['message']}');
+    }
+    catch (e) {
+      print(e.toString());
       print('catch error from user repos');
       c.completeError(e);
     }
 
     return c.future;
   }
-  Future<User> signUp(String username, String pass) async {
+  Future<bool> signUp(String username, String pass) async {
     // Callback
     print('Call sign up from user repo');
-    var c = Completer<User>();
+    var c = Completer<bool>();
     try {
-      var response = await _userService.signIn(username, pass);
-      print('response data in repo sign up: '+ response.data);
-      var user = User.fromJson(response.data['data']);
-      if (user != null) {
-        SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
-        c.complete(user);
+      var response = await _userService.signUp(username, pass);
+//      var user = User.fromJson(response.data['data']);
+      if (response.data['status']==200) {
+//        SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
+        c.complete(true);
+      }
+      else{
+        c.completeError('${response.data['message']}');
       }
     } on DioError catch (e) {
       print(e.response.data);
-      c.completeError('Register Error');
+      c.completeError('${e.response.data['message']}');
     } catch (e) {
       print('catch error from user repos');
       c.completeError(e);
