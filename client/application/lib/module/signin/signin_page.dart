@@ -1,7 +1,8 @@
 import 'package:application/base/base_event.dart';
+import 'package:application/event/change_ip_complete.dart';
+import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
 import 'package:application/event/login_success_event.dart';
-import 'package:application/module/signup/signup_page.dart';
 import 'package:application/shared/assets.dart';
 import 'package:application/shared/network_image.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
@@ -12,8 +13,6 @@ import 'package:application/data/remote/user_service.dart';
 import 'package:application/data/repo/user_repo.dart';
 import 'package:application/event/singin_event.dart';
 import 'package:application/module/signin/signin_bloc.dart';
-import 'package:application/shared/app_color.dart';
-import 'package:application/shared/widget/normal_button.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -45,22 +44,33 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _cServer = TextEditingController();
 
   handleLoginEvent(BaseEvent event) {
-    if(event is LoginSuccessEvent){
+    if (event is LoginSuccessEvent) {
       Navigator.pushReplacementNamed(context, '/home');
       return;
     }
-    if(event is LoginFailEvent){
-      final snackBar= SnackBar(
-        content : Text(event.errMessage),
+    if (event is LoginFailEvent) {
+      final snackBar = SnackBar(
+        content: Text(event.errMessage),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
       );
       Scaffold.of(context).showSnackBar(snackBar);
-
+    }
+    if(event is ChangeIPComplete){
+      final snackBar = SnackBar(
+        content: Text('Change server address complete'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
     }
   }
+
+  bool _visible = false;
+
   Widget _buildPageContent(BuildContext context) {
     return Provider<SignInBloc>.value(
       value: SignInBloc(userRepo: Provider.of(context)),
@@ -73,8 +83,50 @@ class _LoginPageState extends State<LoginPage> {
                   color: Colors.blue.shade100,
                   child: ListView(
                     children: <Widget>[
+                      Row(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(top: 5),
+                            child: FloatingActionButton(
+                              heroTag: 'ClickRemoteServer',
+                              foregroundColor: Colors.black54,
+                              backgroundColor: Colors.yellow[250],
+                              elevation: 2.0,
+                              child: Icon(Icons.settings_remote),
+                              onPressed: () {
+                                setState(() {
+                                  _visible = !_visible;
+                                });
+                              },
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(top: 10, left: 10),
+                            child: AnimatedOpacity(
+                                // If the widget is visible, animate to 0.0 (invisible).
+                                // If the widget is hidden, animate to 1.0 (fully visible).
+                                opacity: _visible ? 1.0 : 0.0,
+                                duration: Duration(milliseconds: 1000),
+                                // The green box must be a child of the AnimatedOpacity widget.
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 200.0,
+                                      height: 50.0,
+                                      color: Colors.white,
+                                      child: _buildChangeIP(bloc),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 10),
+                                      child: _buildButtonChange(bloc),
+                                    ),
+                                  ],
+                                )),
+                          ),
+                        ],
+                      ),
                       SizedBox(
-                        height: 30.0,
+                        height: 10.0,
                       ),
                       CircleAvatar(
                         child: PNetworkImage(origami),
@@ -105,6 +157,51 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  _buildButtonChange(SignInBloc bloc) {
+    return StreamProvider<bool>.value(
+      initialData: false,
+      value: bloc.btnChangeStream,
+      child: Consumer<bool>(
+        builder: (context, enable, child) => FloatingActionButton(
+            heroTag: 'Server',
+            foregroundColor: Colors.black54,
+            backgroundColor: Colors.yellow[250],
+            elevation: 2.0,
+            child: Icon(FontAwesomeIcons.arrowRight),
+            onPressed: enable?() {
+              bloc.event.add(ChangeIPEvent(
+                newIP: _cServer.text
+              ));
+              setState(() {
+                _visible=!_visible;
+              });
+            }:null),
+      ),
+    );
+  }
+
+  _buildChangeIP(SignInBloc bloc) {
+    return StreamProvider<String>.value(
+      initialData: null,
+      value: bloc.ipStream,
+      child: Consumer<String>(
+        builder: (context, msg, child) => TextField(
+          textInputAction: TextInputAction.go,
+          decoration: new InputDecoration(
+            hintText: "192.168.",
+            errorText: msg,
+          ),
+          controller: _cServer,
+          onChanged: (value){
+            bloc.ipSink.add(value);
+          },
+          onSubmitted: (value) {
+            },
+        ),
+      ),
+    );
+  }
+
   Container _buildLoginForm(SignInBloc bloc) {
     return Container(
       padding: EdgeInsets.all(20.0),
@@ -113,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
           ClipPath(
             clipper: RoundedDiagonalPathClipper(),
             child: Container(
-              height: 400,
+              height: 350,
               padding: EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(40.0)),
@@ -123,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   SizedBox(
-                    height: 90.0,
+                    height: 70.0,
                   ),
                   _buildUserName(bloc),
                   Container(
@@ -159,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
           Container(
-            height: 420,
+            height: 370,
             child: Align(
               alignment: Alignment.bottomCenter,
               child: _buildLoginButton(bloc),
@@ -240,9 +337,7 @@ class _LoginPageState extends State<LoginPage> {
               onChanged: (text) {
                 bloc.passwordSink.add(text);
               },
-              onSubmitted: (text){
-
-              },
+              onSubmitted: (text) {},
               //Set listener for password
               controller: _passwordController,
               style: TextStyle(color: Colors.blue),
@@ -259,5 +354,4 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 }

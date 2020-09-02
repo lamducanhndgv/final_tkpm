@@ -3,16 +3,17 @@ import 'package:application/shared/constant.dart';
 import 'package:dio/dio.dart';
 
 class DetectClient {
+  static final PORT = '8888';
+  static var urlServer = 'http://192.168.1.2:$PORT';
   static BaseOptions _options = new BaseOptions(
-    baseUrl: "http://192.168.1.9:8888",
-    
+    baseUrl: urlServer,
     connectTimeout: 5000,
     receiveTimeout: 3000,
   );
   static Dio _dio = Dio(_options);
 
   DetectClient._internal() {
-    _dio.interceptors.add(LogInterceptor(responseBody: true));
+    _dio.interceptors.add(LogInterceptor(responseBody: false));
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (Options option) async {
       var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
@@ -24,6 +25,11 @@ class DetectClient {
   }
 
   static final DetectClient instance = DetectClient._internal();
+
+  static setServerIP(String newIP) {
+    urlServer = 'http://' + newIP + ':$PORT';
+    _options.baseUrl = urlServer;
+  }
 
   Dio get dio => _dio;
 }

@@ -23,4 +23,10 @@ class UserService {
       },
     );
   }
+
+  changeServerAddress(String newIP) {
+    print('Call change from user service');
+    DetectClient.setServerIP(newIP);
+  }
+
 }

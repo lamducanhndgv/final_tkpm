@@ -15,7 +15,7 @@ import 'package:application/data/repo/user_repo.dart';
 import 'package:application/event/singin_event.dart';
 import 'package:application/module/signin/signin_bloc.dart';
 import 'package:application/shared/app_color.dart';
-import 'package:application/shared/widget/normal_button.dart';
+
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:provider/provider.dart';
 
@@ -182,7 +182,6 @@ class _SignupPageState extends State<SignupPage> {
               controller: usernameController,
               style: TextStyle(color: Colors.blue),
               onChanged: (text) {
-                print('user change');
                 bloc.userSink.add(text);
               },
               decoration: InputDecoration(
@@ -211,7 +210,7 @@ class _SignupPageState extends State<SignupPage> {
               obscureText: true,
               onChanged: (text) {
                 bloc.passwordSink.add(text);
-                print('pass change');
+
               },
               style: TextStyle(color: Colors.blue),
               decoration: InputDecoration(

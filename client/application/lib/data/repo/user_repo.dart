@@ -62,4 +62,9 @@ class UserRepo {
 
     return c.future;
   }
+
+  changeServerAddress(String newIP){
+    print('Call change from user repo');
+    _userService.changeServerAddress(newIP);
+  }
 }

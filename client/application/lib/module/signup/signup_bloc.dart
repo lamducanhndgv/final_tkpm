@@ -58,6 +58,7 @@ class SignUpBloc extends BaseBloc {
       sink.add('Password too short');
   });
 
+
   Stream<String> get userStream => _username.stream.transform(userValidate);
 
   Sink<String> get userSink => _username.sink;
