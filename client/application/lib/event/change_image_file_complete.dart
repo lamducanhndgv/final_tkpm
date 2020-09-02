@@ -4,6 +4,5 @@ import 'package:flutter/cupertino.dart';
 
 class ChangeImgFileComplete extends BaseEvent{
   File imageFile;
-  ChangeImgFileComplete({@required this.imageFile}){
-  }
+  ChangeImgFileComplete({@required this.imageFile});
 }

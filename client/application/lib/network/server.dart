@@ -3,7 +3,7 @@ import 'package:application/shared/constant.dart';
 import 'package:dio/dio.dart';
 
 class DetectClient {
-  static final PORT = '8888';
+  static const PORT = '8888';
   static var urlServer = 'http://192.168.1.2:$PORT';
   static BaseOptions _options = new BaseOptions(
     baseUrl: urlServer,

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 import 'package:application/shared/models/User.dart';
 import 'package:dio/dio.dart';
@@ -22,8 +21,8 @@ class UserRepo {
       var response = await _userService.signIn(username, pass);
       var user = User.fromJson(response.data);
       if (user != null) {
-
         SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
+        SPref.instance.set(SPrefCache.MODEL_NAMES,response.data['model']);
         c.complete(user);
       }
     } on DioError catch (e) {
@@ -35,7 +34,6 @@ class UserRepo {
       print('catch error from user repos');
       c.completeError(e);
     }
-
     return c.future;
   }
   Future<bool> signUp(String username, String pass) async {

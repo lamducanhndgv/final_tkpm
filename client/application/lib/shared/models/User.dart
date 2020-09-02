@@ -1,11 +1,11 @@
+import 'package:flutter/cupertino.dart';
+
 class User {
   String username;
-
-//  String _password;
   String token;
   String modelNames;
 
-  User({this.username, this.token, this.modelNames});
+  User({this.username, @required this.token, this.modelNames});
 //
 //  User.map(dynamic obj){
 //    this._username = obj['username'];

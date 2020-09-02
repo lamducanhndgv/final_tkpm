@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:application/base/base_bloc.dart';
 import 'package:application/base/base_event.dart';
 import 'package:application/data/repo/user_repo.dart';
@@ -8,7 +7,6 @@ import 'package:application/event/register_success_event.dart';
 import 'package:application/event/signup_event.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SignUpBloc extends BaseBloc {

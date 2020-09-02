@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:application/base/base_event.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/detect_service.dart';
@@ -17,28 +15,17 @@ import 'package:application/event/change_image_url_event.dart';
 import 'package:application/event/detect_image_complete.dart';
 import 'package:application/event/detect_image_error.dart';
 import 'package:application/event/detect_image_event.dart';
-
 import 'package:application/module/home/home_bloc.dart';
 import 'package:application/module/signin/signin_page.dart';
-import 'package:application/network/server.dart';
 import 'package:application/shared/constant.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
 import 'package:application/shared/widget/loading_task.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'package:progress_dialog/progress_dialog.dart';
-import 'package:async/async.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:application/shared/assets.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatelessWidget {
@@ -79,16 +66,18 @@ class _HomePageState extends State<HomePage> {
   final Color color2 = Colors.blue; //Color.fromRGBO(252, 244, 3, 1);
   TextEditingController _c;
 
-  Uri apiUrl; //= Uri.parse(mIP + "detection");
-  String dropdownValue = 'One';
-
+  Uri apiUrl;
+  String dropdownValue;
   var _isDetecting = false;
+  var hasModels = false;
+  List<String> listModelNames;
 
   @override
   void initState() {
     super.initState();
     _urlPicture = new StringBuffer();
-//    checkLoginStatus();
+    initForDropdown();
+    checkLoginStatus();
   }
 
   checkLoginStatus() async {
@@ -128,11 +117,11 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
-  Widget _decideImage({Uint8List base = null, BuildContext context}) {
-    if (_base64 != null)
+  Widget _decideImage({Uint8List base}) {
+    if (base != null)
       return PhotoView(
         imageProvider: new Image.memory(
-          _base64,
+          base,
           width: 400,
           height: 400,
         ).image,
@@ -140,6 +129,7 @@ class _HomePageState extends State<HomePage> {
     if (_urlPicture != null) {
       String url = _urlPicture.toString();
       try {
+        print('url pic not null $url');
         return CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
@@ -156,13 +146,13 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }
-
     if (_imageFile == null)
       return Image.asset(
         'assets/no_img.png',
         width: 400,
         height: 400,
       );
+    print('file ');
     return PhotoView(
         imageProvider: Image.file(_imageFile, fit: BoxFit.cover).image);
   }
@@ -199,13 +189,14 @@ class _HomePageState extends State<HomePage> {
                   //change here don't //worked
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildDropdownList(bloc),
+                    if(hasModels==true)_buildDropdownList(bloc),
                     new Spacer(), // I just added one line
                     Container(
                       margin: const EdgeInsets.only(top: 20, right: 10),
                       child: FlatButton(
                         onPressed: () {
                           SPref.instance.set(SPrefCache.KEY_TOKEN, null);
+                          SPref.instance.set(SPrefCache.MODEL_NAMES, null);
                           Navigator.pushReplacementNamed(context, '/home');
                         },
                         shape: RoundedRectangleBorder(
@@ -387,8 +378,7 @@ class _HomePageState extends State<HomePage> {
             dropdownValue = newValue;
           });
         },
-        items: <String>['One', 'Two', 'Free', 'Four']
-            .map<DropdownMenuItem<String>>((String value) {
+        items: listModelNames.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value),
@@ -405,7 +395,7 @@ class _HomePageState extends State<HomePage> {
         _base64 = null;
         _imageFile = null;
       });
-      _buildSnackBar(context, 'Change url image complete');
+      _buildSnackBar(context, 'Change url image complete',Colors.green);
     }
     if (event is ChangeImgFileComplete) {
       setState(() {
@@ -413,28 +403,41 @@ class _HomePageState extends State<HomePage> {
         _imageFile = event.imageFile;
         _base64 = null;
       });
-      _buildSnackBar(context, 'Change file image complete');
+      _buildSnackBar(context, 'Change file image complete',Colors.green);
     }
     if (event is ChangeImgFileNotPick) {
-      _buildSnackBar(context, 'Cancel choose image');
+      _buildSnackBar(context, 'Cancel choose image',Colors.grey);
     }
     if (event is DetectImageComplete) {
-      _buildSnackBar(context, "Detect complete");
+      _isDetecting =false;
+      _buildSnackBar(context, "Detect complete",Colors.green);
       setState(() {
         _base64 = event.bytesImage;
       });
     }
     if (event is DetectImageError) {
-      _buildSnackBar(context, "Error due to ${event.message}");
+      _isDetecting =false;
+      _buildSnackBar(context, "Error due to ${event.message}",Colors.red);
     }
   }
 
-  void _buildSnackBar(BuildContext context, String message) {
+  _buildSnackBar(BuildContext context, String message, MaterialColor color) {
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: Colors.green,
+      backgroundColor: color,
       duration: Duration(seconds: 3),
     );
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  initForDropdown() async {
+//    String stringModelNames = await SPref.instance.get(SPrefCache.MODEL_NAMES);
+    String stringModelNames = "Anh,Top,Dep,Trai,Vo,Dich";
+    if (stringModelNames != null) {
+      listModelNames = stringModelNames.split(",");
+      dropdownValue = listModelNames[0];
+      hasModels=true;
+    }
+
   }
 }

@@ -33,5 +33,7 @@ abstract class BaseBloc {
   @mustCallSuper
   void dispose() {
     _eventStreamController.close();
+    _processStreamController.close();
+    _isLoading.close();
   }
 }

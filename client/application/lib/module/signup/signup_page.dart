@@ -3,7 +3,6 @@ import 'package:application/event/register_fail_event.dart';
 import 'package:application/event/register_success_event.dart';
 import 'package:application/event/signup_event.dart';
 import 'package:application/module/signup/signup_bloc.dart';
-import 'package:application/module/signup/signup_page.dart';
 import 'package:application/shared/assets.dart';
 import 'package:application/shared/network_image.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
@@ -12,10 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/user_service.dart';
 import 'package:application/data/repo/user_repo.dart';
-import 'package:application/event/singin_event.dart';
-import 'package:application/module/signin/signin_bloc.dart';
-import 'package:application/shared/app_color.dart';
-
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +21,9 @@ class RegisterPage extends StatelessWidget {
       di: [
         // dependency injection
         Provider.value(value: UserService()),
+        // ignore: missing_required_param
         ProxyProvider<UserService, UserRepo>(
+          // ignore: deprecated_member_use
           builder: (context, userService, previous) =>
               UserRepo(userService: userService),
         )
@@ -97,7 +94,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Container _buildLoginForm(bloc) {
+   _buildLoginForm(bloc) {
     return Container(
       padding: EdgeInsets.all(20.0),
       child: Stack(

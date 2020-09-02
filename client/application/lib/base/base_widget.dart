@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:application/data/remote/user_service.dart';
-import 'package:application/data/repo/user_repo.dart';
-import 'package:application/shared/app_color.dart';
 import 'package:provider/provider.dart';
 
 class PageContainer extends StatelessWidget {

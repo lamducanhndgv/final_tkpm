@@ -14,13 +14,14 @@ class DetectService {
       ),
       "model": model,
     });
-
+    print(data.toString());
     return DetectClient.instance.dio.post('/detection/file',
         data: data, options: Options(responseType: ResponseType.bytes));
   }
 
   Future<Response> sendURLToDetect(String url, String model) async {
     print('Detect service send url');
+    print('url $url , model : $model');
     return DetectClient.instance.dio.post('/detection/url',
         data: {"url": url, "model": model},
         options: Options(responseType: ResponseType.bytes));

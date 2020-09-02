@@ -24,7 +24,9 @@ class SignIn extends StatelessWidget {
       di: [
         // using dependency injection
         Provider.value(value: UserService()),
+        // ignore: missing_required_param
         ProxyProvider<UserService, UserRepo>(
+          // ignore: deprecated_member_use
           builder: (context, userService, previous) =>
               UserRepo(userService: userService),
         )

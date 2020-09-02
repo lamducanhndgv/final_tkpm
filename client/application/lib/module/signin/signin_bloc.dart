@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:application/event/change_ip_complete.dart';
 import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
@@ -9,10 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:application/base/base_bloc.dart';
 import 'package:application/base/base_event.dart';
 import 'package:application/data/repo/user_repo.dart';
-import 'package:application/data/spref/spref.dart';
-import 'package:application/event/signup_event.dart';
 import 'package:application/event/singin_event.dart';
-import 'package:application/shared/constant.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SignInBloc extends BaseBloc {
@@ -96,7 +92,6 @@ class SignInBloc extends BaseBloc {
 
   @override
   void dispatchEvent(BaseEvent event) {
-    print(event.toString());
     switch (event.runtimeType) {
       case SignInEvent:
         handleSignInEvent(event);

@@ -93,6 +93,7 @@ class HomePageBloc extends BaseBloc {
 
   handleChooseInGalleyry(BaseEvent event) async {
     ChangeImgInGallery e = event as ChangeImgInGallery;
+    // ignore: deprecated_member_use
     var pickedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (pickedImage != null)
       processSink.add(ChangeImgFileComplete(imageFile: pickedImage));
@@ -103,6 +104,7 @@ class HomePageBloc extends BaseBloc {
 
   handleChooseByCamera(BaseEvent event) async {
     ChangeImgByCamera e = event as ChangeImgByCamera;
+    // ignore: deprecated_member_use
     var pickedImage = await ImagePicker.pickImage(source: ImageSource.camera);
     if (pickedImage != null)
       processSink.add(ChangeImgFileComplete(imageFile: pickedImage));
@@ -118,22 +120,20 @@ class HomePageBloc extends BaseBloc {
       DetectImageEvent e = event as DetectImageEvent;
       if (e.urlImage != null) {
         _detectRepos.detectByURL(e.urlImage, e.modelName).then((result) {
-          print('helllooooo123123' + result.length.toString());
           processSink.add(DetectImageComplete(bytesImage: result));
-        }, onError: (e) {
-          print(e.toString());
+        }, onError: (error) {
+          print(error.toString());
           loadingSink.add(false);
-          processSink.add(DetectImageError(message:e.toString()));
+          processSink.add(DetectImageError(message:error.toString()));
         });
       } else if (e.fileImage != null) {
         _detectRepos.detectByImage(e.fileImage, e.modelName).then((result) {
           print(result.length);
-          print('helllooooo' + result.length.toString());
           processSink.add(DetectImageComplete(bytesImage:result));
-        }, onError: (e) {
-          print(e.toString());
+        }, onError: (error) {
+          print(error.toString());
           loadingSink.add(false);
-          processSink.add(DetectImageError(message:e.toString()));
+          processSink.add(DetectImageError(message:error.toString()));
         });
       }
       loadingSink.add(false);
