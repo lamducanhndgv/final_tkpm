@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}AI model bot{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="limiter">
+		<div id="background">
+            <div class="header mb-5 mt-5">
+                <div class="username">
+                    <h1>{{name}}</h1>
+                </div>
+                <button id="logout-btn" class='logout-btn'>Logout</button>
+            </div>
+
+            
+            <div id="upload-form" class="mt-5">
+                <input id="file-container" class="mb-4" type="file" name="file" />
+                <div class="d-flex flex-columns justify-content-between mb-5">
+                    <label for="model-name">Model's name</label>
+                    <input id="model-name" type="text" name = "model-name" />
+                </div>
+
+                <button id="upload-btn">Upload</button>
+                <button class="btn btn-warning d-none" type="button" id="cancel-btn">Cancel upload</button>
+
+                <div id="progress_wrapper" class="d-none">
+                    <label id="progress_status"></label>
+                    <div class="progress mb-3">
+                        <div id="progress" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <div id="alert_wrapper"></div>
+            </div>
+		</div>
+	</div>
+{% endblock %}

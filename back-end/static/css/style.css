@@ -1,0 +1,87 @@
+.limiter {
+    background: white !important;
+}
+
+.background {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around !important;
+    height: 30%;
+}
+
+.logout-btn {
+    cursor: pointer;
+    font-size: 25px;
+    color: #54747c;
+}
+
+.logout-btn:hover {
+    color: #3d585f;
+}
+
+.username {
+    font-size: 25px;
+    margin-right: 20px;
+    background: #54747c;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+#background {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+#upload-form {
+    display: flex;
+    flex-direction: column;
+
+}
+
+#upload-btn {
+    background-color: #54747c;
+}
+
+#upload-form {
+    border: 2px solid #54747c;
+    padding: 30px;
+    font-size: 20px;
+}
+
+#model-name {
+    border-bottom: 1px solid #54747c;
+}
+
+#model-name:focus {
+    border-bottom: 2px solid #54747c !important;
+}
+
+#upload-btn {
+    color: white;
+    height: 50px;
+    width: 500px;
+}
+
+#upload-btn:hover {
+    background: #3d585f !important;
+} 
+
+#h1 {
+    font-size: 40px;
+    color: #54747c;
+}
+
+i {
+    color: #54747c !important;
+}
