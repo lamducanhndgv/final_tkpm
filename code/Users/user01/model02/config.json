@@ -1,0 +1,20 @@
+[
+  {
+    "type": "command",
+    "value": "python"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "detect.py"
+  },
+  {
+    "type": "input",
+    "parameter": "--img-path"
+  },
+  {
+    "type": "output",
+    "parameter": "",
+    "value": "detections.jpg"
+  }
+]
