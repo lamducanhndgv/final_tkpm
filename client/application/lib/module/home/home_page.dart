@@ -17,6 +17,7 @@ import 'package:application/event/detect_image_error.dart';
 import 'package:application/event/detect_image_event.dart';
 import 'package:application/module/home/home_bloc.dart';
 import 'package:application/module/signin/signin_page.dart';
+import 'package:application/network/server.dart';
 import 'package:application/shared/constant.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
 import 'package:application/shared/widget/loading_task.dart';
@@ -75,15 +76,21 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    super.initState();
     _urlPicture = null;//new StringBuffer();
+    checkLoginStatusAndIP();
     initForDropdown();
-    checkLoginStatus();
+    super.initState();
+
   }
 
-  checkLoginStatus() async {
+  checkLoginStatusAndIP() async {
+    var ip = await SPref.instance.get(SPrefCache.CURRENT_IP_SERVER);
+    if(ip!=null) {
+      DetectClient.setServerIP(ip);
+    }
     var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
-    if (token == null) {
+    if (token == null || ip==null) {
+      print("Token null or ip null");
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => SignIn()),
           (Route<dynamic> route) => false);
@@ -306,6 +313,9 @@ class _HomePageState extends State<HomePage> {
       onPressed: _isDetecting != true
           ? () {
               print('clicked');
+              if( dropdownValue == null || dropdownValue.length<1)
+                {_buildSnackBar(context, "No model selected", Colors.red);  return;}
+
               if (_urlPicture != null) {
                 print('send url event');
                 _isDetecting = true;
@@ -434,9 +444,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   initForDropdown() async {
-//    String stringModelNames = await SPref.instance.get(SPrefCache.MODEL_NAMES);
-    String stringModelNames = "Anh,Top,Dep,Trai,Vo,Dich";
+    String stringModelNames = await SPref.instance.get(SPrefCache.MODEL_NAMES);
     if (stringModelNames != null) {
+      print("LIST NOT NULL");
       listModelNames = stringModelNames.split(",");
       dropdownValue = listModelNames[0];
       hasModels = true;

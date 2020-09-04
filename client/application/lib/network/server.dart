@@ -13,12 +13,13 @@ class DetectClient {
   static Dio _dio = Dio(_options);
 
   DetectClient._internal() {
+    print('dio get instance internal');
     _dio.interceptors.add(LogInterceptor(responseBody: false));
     _dio.interceptors
         .add(InterceptorsWrapper(onRequest: (Options option) async {
       var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
       if (token != null) {
-        option.headers["Authorization"] = "Bearer " + token;
+        option.headers["Authorization"] =  token;
       }
       return option;
     }));
@@ -29,6 +30,7 @@ class DetectClient {
   static setServerIP(String newIP) {
     urlServer = 'http://' + newIP + ':$PORT';
     _options.baseUrl = urlServer;
+    SPref.instance.set(SPrefCache.CURRENT_IP_SERVER, newIP);
   }
 
   Dio get dio => _dio;

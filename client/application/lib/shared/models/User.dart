@@ -1,3 +1,5 @@
+import 'package:application/data/spref/spref.dart';
+import 'package:application/shared/constant.dart';
 import 'package:flutter/cupertino.dart';
 
 class User {
@@ -6,26 +8,18 @@ class User {
   String modelNames;
 
   User({this.username, @required this.token, this.modelNames});
-//
-//  User.map(dynamic obj){
-//    this._username = obj['username'];
-//    this._password = obj['password'];
-//
-//  }
-//  String get username=>_username;
-//  String get password =>_password;
-//
-//  Map<String, dynamic>toMap(){
-//    var map = new Map<String,dynamic>();
-//    map['username']= _username;
-//    map['password']=_password;
-//    return map;
-//  }
-  factory User.fromJson(Map<String, dynamic> map) {
+  factory User.fromJson(Map<String, dynamic> map)  {
     print('Factory user model from json:');
+    String x = "";
+    if (map['listmodels'].length > 1) {
+      for (String model in map['listmodels']) {
+        x += model.toString() + ",";
+      }
+      x = x.substring(0, x.length - 1);
+    }
+    if(x.length<2) x=null;
     return User(
-//        username: map['username'],
-        token: map['token']);
-//        modelNames: map['modelnames']);
+        token: map['token'],
+        modelNames: x);
   }
 }

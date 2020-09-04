@@ -22,7 +22,7 @@ class UserRepo {
       var user = User.fromJson(response.data);
       if (user != null) {
         SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
-        SPref.instance.set(SPrefCache.MODEL_NAMES,response.data['model']);
+        SPref.instance.set(SPrefCache.MODEL_NAMES,user.modelNames);
         c.complete(user);
       }
     } on DioError catch (e) {
