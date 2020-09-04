@@ -1,6 +1,6 @@
 from flask import Flask,  render_template, url_for, request, session, redirect, jsonify
 from flask_pymongo import PyMongo
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from middlewares.token_require import token_require
 from helpers.createDir import make_dir
 from helpers.createDir import is_path_existing
@@ -12,7 +12,9 @@ import json
 import os
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['MONGO_DBNAME'] = 'tkpm_final'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/tkpm_final'
@@ -99,6 +101,8 @@ def register():
             hashpass = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             users.insert({'username': data['username'], 'password': hashpass})
             session['username'] = data['username']
+            
+            make_dir('users/', session['username'])
 
             # http status code 200
             return jsonify(status=200,

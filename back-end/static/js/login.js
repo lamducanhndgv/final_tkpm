@@ -1,4 +1,3 @@
-let logURL = 'http://localhost:8888/login'
 let loginButton = document.getElementById('login-btn');
 
 loginButton.addEventListener('click', (e) => {
@@ -20,7 +19,7 @@ let loginForm = (username, password) => {
         if (this.readyState == 4 && this.status == 200) {
             let res = xhttp.response// Typical action to be performed when the document is ready:
             setCookie('token',res.token,2);
-            window.location.replace('http://localhost:8888')
+            window.location.replace(hostURL)
         }
         else if (this.readyState == 4 && this.status == 401) {
             let res = xhttp.response// Typical action to be performed when the document is ready:

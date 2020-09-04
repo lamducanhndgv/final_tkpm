@@ -1,4 +1,3 @@
-let regURL = 'http://localhost:8888/register'
 let registerButton = document.getElementById('register-btn');
 
 registerButton.addEventListener('click', (e) => {
@@ -29,7 +28,7 @@ let registerForm = (username, password) => {
         if (this.readyState == 4 && this.status == 200) {
            let res = xhttp.response// Typical action to be performed when the document is ready:
            alert(res.message)
-           window.location.replace('http://localhost:8888/login')
+           window.location.replace(logURL)
         }
         else if (this.readyState == 4 && this.status == 400) {
             let res = xhttp.response// Typical action to be performed when the document is ready:

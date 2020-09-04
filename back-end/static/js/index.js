@@ -1,4 +1,3 @@
-let logoutURL = 'http://localhost:8888/logout'
 let logoutButton = document.getElementById('logout-btn')
 
 logoutButton.addEventListener('click', (e)=> {
@@ -6,7 +5,7 @@ logoutButton.addEventListener('click', (e)=> {
     xhttp.responseType = 'json';
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            window.location.replace('http://localhost:8888/')
+            window.location.replace(hostURL)
         }
     };
     xhttp.open('POST', logoutURL, true);
@@ -21,7 +20,7 @@ let inputName = document.getElementById('model-name')
 let inputFile = document.getElementById('file-container')
 
 uploadBtn.addEventListener('click', (e)=> {
-    upload('http://localhost:8888/')
+    upload(hostURL)
 })
 
 
