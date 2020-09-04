@@ -6,6 +6,6 @@ def is_path_existing(path):
 def make_dir(parent_dir,folder):
     path = os.path.join(parent_dir,folder)
     if not is_path_existing(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
     return path

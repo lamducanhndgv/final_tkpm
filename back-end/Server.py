@@ -5,6 +5,9 @@ from middlewares.token_require import token_require
 from helpers.createDir import make_dir
 from helpers.createDir import is_path_existing
 from werkzeug.utils import secure_filename
+from PIL import Image
+from io import BytesIO
+import io
 import zipfile36 as zipfile
 import bcrypt
 import jwt
@@ -102,7 +105,7 @@ def register():
             users.insert({'username': data['username'], 'password': hashpass})
             session['username'] = data['username']
             
-            make_dir('users/', session['username'])
+            make_dir('users/', session['username'] + '/images')
 
             # http status code 200
             return jsonify(status=200,
@@ -118,6 +121,7 @@ def register():
     return render_template('register.html')
 
 # @app.route('/detection/url', methods=['POST'])
+# @token_require
 # def mainUrlDetection():
 #     print('detection url')
 #     requestData=str(request.data,'utf-8')
@@ -127,13 +131,15 @@ def register():
 #     img = Image.open(urllib.request.urlopen(imgUrl))
 #     return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
 
-# @app.route('/detection/file', methods=['POST'])
-# def main2():
-#     img = request.files["image"].read();
-#     model = request.form.to_dict(flat=False)['model'][0];
-#     img = Image.open(io.BytesIO(img))
-#     # predict
-#     return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
+@app.route('/detection/file', methods=['POST'])
+@token_require
+def main2():
+    img = request.files["image"].read();
+    model = request.form.to_dict(flat=False)['model'][0];
+    Image.open(io.BytesIO(img)).save('/users/images/{}.png'.format(session['username']))
+    # predict
+    # return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
+    return jsonify(status=200,message='Uploaded ok!'),200
 
 @app.route('/logout', methods=['POST'])
 def logout():
