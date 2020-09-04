@@ -86,6 +86,9 @@ function upload(url) {
         else if (request.status == 500){
             show_alert(`${request.response.message}`, "warning")
         }
+        else if (request.status == 401){
+            show_alert(`${request.response.message}`, "danger")
+        }
         else {
             show_alert("Error uploading file", "danger");
         }
@@ -98,7 +101,10 @@ function upload(url) {
         show_alert("Error uploading file", "danger");
     })
 
+
     request.open('POST', url)
+    request.setRequestHeader('Authorization', getCookie('token'));
+    // request.setRequestHeader('token', getCookie('token'));
     request.send(data)
 
     cancelBtn.addEventListener('click', function(e) {

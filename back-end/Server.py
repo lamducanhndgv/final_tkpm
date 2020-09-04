@@ -28,7 +28,7 @@ def get_index():
 
 
 @app.route('/', methods=['POST'])
-# @token_require
+@token_require
 def post_index():
     req = request.form
     modelname = req.get('modelname')
@@ -56,6 +56,7 @@ def login():
     if request.method == 'POST':
         data = json.loads(request.data)
         users = mongo.db.users
+        models = mongo.db.models
 
         # find username in database
         login_user = users.find_one({'username': data['username']})
@@ -66,9 +67,14 @@ def login():
                 session['username'] = data['username']
                 encoded_jwt = jwt.encode({'id': str(login_user['_id'])}, 'secret', algorithm='HS256')
 
+                listmodels = []
+                for models in models.find({'username': data['username']}):
+                    listmodels.append(models['modelname'])
+
                 # if success return token and http status code 200
                 return jsonify(status=200,
                                 message='Login successfully!',
+                                listmodels=listmodels,
                                 token=encoded_jwt.decode('utf-8') ),200
 
         # http status code 401
@@ -106,6 +112,24 @@ def register():
         return redirect('/')
 
     return render_template('register.html')
+
+# @app.route('/detection/url', methods=['POST'])
+# def mainUrlDetection():
+#     print('detection url')
+#     requestData=str(request.data,'utf-8')
+#     data = json.loads(requestData)
+#     imgUrl= data['url']
+#     modelName = data['model']
+#     img = Image.open(urllib.request.urlopen(imgUrl))
+#     return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
+
+# @app.route('/detection/file', methods=['POST'])
+# def main2():
+#     img = request.files["image"].read();
+#     model = request.form.to_dict(flat=False)['model'][0];
+#     img = Image.open(io.BytesIO(img))
+#     # predict
+#     return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
 
 @app.route('/logout', methods=['POST'])
 def logout():
