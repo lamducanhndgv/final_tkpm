@@ -5,6 +5,7 @@ import 'package:application/data/repo/user_repo.dart';
 import 'package:application/event/register_fail_event.dart';
 import 'package:application/event/register_success_event.dart';
 import 'package:application/event/signup_event.dart';
+import 'package:application/shared/constant.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
@@ -24,9 +25,9 @@ class SignUpBloc extends BaseBloc {
   combineFormRegister() {
     Rx.combineLatest3(_username, _password, _confirmPass,
         (username, password, confirm) {
-      return Validation.isPassValid(password) &&
-          Validation.isUsernameValid(username) &&
-          Validation.isPassValid(confirm) &&
+      return Validation.isPassValid(password, MIN_LENGTH_REGISTER) &&
+          Validation.isUsernameValid(username,MIN_LENGTH_REGISTER) &&
+          Validation.isPassValid(confirm,MIN_LENGTH_REGISTER) &&
           ( password.compareTo(confirm)==0);
     }).listen((event) {
       btnSink.add(event);
@@ -35,14 +36,14 @@ class SignUpBloc extends BaseBloc {
 
   var userValidate = StreamTransformer<String, String>.fromHandlers(
       handleData: (username, sink) {
-    if (Validation.isUsernameValid(username)) {
+    if (Validation.isUsernameValid(username,MIN_LENGTH_REGISTER)) {
       sink.add(null);
     } else
       sink.add('Username invalid');
   });
   var passValidate = StreamTransformer<String, String>.fromHandlers(
       handleData: (password, sink) {
-    if (Validation.isPassValid(password)) {
+    if (Validation.isPassValid(password,MIN_LENGTH_REGISTER)) {
       sink.add(null);
     } else
       sink.add('Password too short');
@@ -50,7 +51,7 @@ class SignUpBloc extends BaseBloc {
   // Want to check match password but can not do ? ?
   var confirmValidate = StreamTransformer<String, String>.fromHandlers(
       handleData: (confirm, sink) {
-    if (Validation.isPassValid(confirm)) {
+    if (Validation.isPassValid(confirm,MIN_LENGTH_REGISTER)) {
       sink.add(null);
     } else
       sink.add('Password too short');

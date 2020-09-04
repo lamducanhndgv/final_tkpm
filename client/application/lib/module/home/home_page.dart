@@ -25,6 +25,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 
@@ -62,8 +63,8 @@ class _HomePageState extends State<HomePage> {
   Uint8List _base64;
   StringBuffer _urlPicture;
 
-  final Color color1 = Colors.lightBlueAccent; //Color.fromRGBO(252, 119, 3, 1);
-  final Color color2 = Colors.blue; //Color.fromRGBO(252, 244, 3, 1);
+  final Color color1 = Hexcolor("#9CC9F5"); //Color.fromRGBO(252, 119, 3, 1);
+  final Color color2 = Colors.lightBlueAccent; //Color.fromRGBO(252, 244, 3, 1);
   TextEditingController _c;
 
   Uri apiUrl;
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _urlPicture = new StringBuffer();
+    _urlPicture = null;//new StringBuffer();
     initForDropdown();
     checkLoginStatus();
   }
@@ -89,78 +90,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _showChoiceDialog(BuildContext context, HomePageBloc bloc) {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Choose your image'),
-            content: SingleChildScrollView(
-                child: ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: Text("Gallery"),
-                  onTap: () {
-                    bloc.event.add(ChangeImgInGallery(context: context));
-                  },
-                ),
-                Padding(padding: EdgeInsets.all(8)),
-                GestureDetector(
-                  child: Text("Camera"),
-                  onTap: () {
-                    bloc.event.add(ChangeImgByCamera(context: context));
-                  },
-                )
-              ],
-            )),
-          );
-        });
-  }
-
-  Widget _decideImage({Uint8List base}) {
-    if (base != null)
-      return PhotoView(
-        imageProvider: new Image.memory(
-          base,
-          width: 400,
-          height: 400,
-        ).image,
-      );
-    if (_urlPicture != null) {
-      String url = _urlPicture.toString();
-      try {
-        print('url pic not null $url');
-        return CachedNetworkImage(
-          imageUrl: url,
-          fit: BoxFit.cover,
-          errorWidget: (context, url, error) {
-            _urlPicture = null;
-            return Image(
-              image: AssetImage('assets/no_img.png'),
-            );
-          },
-        );
-      } catch (e) {
-        return Image(
-          image: AssetImage('assets/no_img.png'),
-        );
-      }
-    }
-    if (_imageFile == null)
-      return Image.asset(
-        'assets/no_img.png',
-        width: 400,
-        height: 400,
-      );
-    print('file ');
-    return PhotoView(
-        imageProvider: Image.file(_imageFile, fit: BoxFit.cover).image);
-  }
-
   @override
   Widget build(BuildContext context) {
-    _c = new TextEditingController();
-    return Scaffold(body: _buildHomepageView(context));
+    _c = new TextEditingController(); // RGBA rgba( 1)
+    return Scaffold(
+      body: _buildHomepageView(context),
+    );
   }
 
   _buildHomepageView(BuildContext context) {
@@ -189,10 +124,10 @@ class _HomePageState extends State<HomePage> {
                   //change here don't //worked
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if(hasModels==true)_buildDropdownList(bloc),
-                    new Spacer(), // I just added one line
+                    if (hasModels == true) _buildDropdownList(bloc),
+                    new Spacer(),
                     Container(
-                      margin: const EdgeInsets.only(top: 20, right: 10),
+                      margin: const EdgeInsets.only(top: 30, right: 10),
                       child: FlatButton(
                         onPressed: () {
                           SPref.instance.set(SPrefCache.KEY_TOKEN, null);
@@ -211,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 60),
-                  height: 550,
+                  height: 600,
                   child: Column(
                     children: <Widget>[
                       SizedBox(height: 20.0),
@@ -228,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10.0),
+                      SizedBox(height: 30.0),
                       Container(
                         child: Stack(
                           children: <Widget>[
@@ -290,6 +225,74 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showChoiceDialog(BuildContext context, HomePageBloc bloc) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Choose your image'),
+            content: SingleChildScrollView(
+                child: ListBody(
+              children: <Widget>[
+                GestureDetector(
+                  child: Text("Gallery"),
+                  onTap: () {
+                    bloc.event.add(ChangeImgInGallery(context: context));
+                  },
+                ),
+                Padding(padding: EdgeInsets.all(8)),
+                GestureDetector(
+                  child: Text("Camera"),
+                  onTap: () {
+                    bloc.event.add(ChangeImgByCamera(context: context));
+                  },
+                )
+              ],
+            )),
+          );
+        });
+  }
+
+  Widget _decideImage({Uint8List base}) {
+    if (base != null)
+      return PhotoView(
+        imageProvider: new Image.memory(
+          base,
+          width: 400,
+          height: 400,
+        ).image,
+      );
+    if (_urlPicture != null && _urlPicture.toString().length > 5) {
+      String url = _urlPicture.toString();
+      try {
+        print('url pic not null $url');
+        return CachedNetworkImage(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          errorWidget: (context, url, error) {
+            _urlPicture = null;
+            return Image(
+              image: AssetImage('assets/no_img.png'),
+            );
+          },
+        );
+      } catch (e) {
+        return Image(
+          image: AssetImage('assets/no_img.png'),
+        );
+      }
+    }
+    if (_imageFile == null)
+      return Image.asset(
+        'assets/no_img.png',
+        width: 400,
+        height: 400,
+      );
+    print('file ');
+    return PhotoView(
+        imageProvider: Image.file(_imageFile, fit: BoxFit.cover).image);
   }
 
   _buildButtonDetectImage(BuildContext context, HomePageBloc bloc) {
@@ -395,7 +398,7 @@ class _HomePageState extends State<HomePage> {
         _base64 = null;
         _imageFile = null;
       });
-      _buildSnackBar(context, 'Change url image complete',Colors.green);
+      _buildSnackBar(context, 'Change url image complete', Colors.green);
     }
     if (event is ChangeImgFileComplete) {
       setState(() {
@@ -403,21 +406,21 @@ class _HomePageState extends State<HomePage> {
         _imageFile = event.imageFile;
         _base64 = null;
       });
-      _buildSnackBar(context, 'Change file image complete',Colors.green);
+      _buildSnackBar(context, 'Change file image complete', Colors.green);
     }
     if (event is ChangeImgFileNotPick) {
-      _buildSnackBar(context, 'Cancel choose image',Colors.grey);
+      _buildSnackBar(context, 'Cancel choose image', Colors.grey);
     }
     if (event is DetectImageComplete) {
-      _isDetecting =false;
-      _buildSnackBar(context, "Detect complete",Colors.green);
+      _isDetecting = false;
+      _buildSnackBar(context, "Detect complete", Colors.green);
       setState(() {
         _base64 = event.bytesImage;
       });
     }
     if (event is DetectImageError) {
-      _isDetecting =false;
-      _buildSnackBar(context, "Error due to ${event.message}",Colors.red);
+      _isDetecting = false;
+      _buildSnackBar(context, "Error due to ${event.message}", Colors.red);
     }
   }
 
@@ -436,8 +439,7 @@ class _HomePageState extends State<HomePage> {
     if (stringModelNames != null) {
       listModelNames = stringModelNames.split(",");
       dropdownValue = listModelNames[0];
-      hasModels=true;
+      hasModels = true;
     }
-
   }
 }

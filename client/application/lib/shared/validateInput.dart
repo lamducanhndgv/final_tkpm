@@ -1,13 +1,12 @@
 import 'package:regexed_validator/regexed_validator.dart';
-
 class Validation{
-  static isPassValid(String password){
+  static isPassValid(String password,int length){
     if(password==null) return false;
-    return password.length>5;
+    return password.length>length;
   }
-  static isUsernameValid(String user){
+  static isUsernameValid(String user, int length){
     if(user==null) return false;
-    return user.length>5;
+    return user.length>length;
   }
 
   static isIPvalid(String ip) {
