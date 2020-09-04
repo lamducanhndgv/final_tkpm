@@ -3,6 +3,7 @@ import 'package:application/event/change_ip_complete.dart';
 import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
 import 'package:application/event/login_success_event.dart';
+import 'package:application/shared/constant.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/widgets.dart';
 import 'package:application/base/base_bloc.dart';
@@ -27,14 +28,14 @@ class SignInBloc extends BaseBloc {
 
   var usernameValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (username, sink) {
-    if (Validation.isUsernameValid(username)) {
+    if (Validation.isUsernameValid(username,MIN_LENGTH_LOGIN)) {
       sink.add(null);
     } else
       sink.add('Username too short');
   });
   var passwordValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (password, sink) {
-    if (Validation.isPassValid(password)) {
+    if (Validation.isPassValid(password,MIN_LENGTH_LOGIN)) {
       sink.add(null);
     } else
       sink.add('Password too short');
@@ -71,8 +72,8 @@ class SignInBloc extends BaseBloc {
 
   void combineSubjectToValid() {
     Rx.combineLatest2(_usernameSubject, _passwordSubject, (username, password) {
-      return Validation.isPassValid(password) &&
-          Validation.isUsernameValid(username);
+      return Validation.isPassValid(password,MIN_LENGTH_LOGIN) &&
+          Validation.isUsernameValid(username,MIN_LENGTH_LOGIN);
     }).listen((event) {
       btnSink.add(event);
     });
