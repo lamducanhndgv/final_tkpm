@@ -7,6 +7,7 @@ from helpers.getUsername import get_username
 from werkzeug.utils import secure_filename
 from PIL import Image
 from io import BytesIO
+import urllib.request
 import io
 import zipfile36 as zipfile
 import bcrypt
@@ -26,6 +27,7 @@ mongo = PyMongo(app)
 
 
 @app.route('/', methods=['GET'])
+# @cross_origin()
 def get_index():
     if 'username' in session:
         return render_template('index.html', name=session['username'])
@@ -33,6 +35,7 @@ def get_index():
 
 
 @app.route('/', methods=['POST'])
+# @cross_origin()
 @token_require
 def post_index():
     req = request.form
@@ -57,6 +60,7 @@ def post_index():
     return jsonify(status=200, message='File upload successful!'),200
 
 @app.route('/login', methods=['POST','GET'])
+# @cross_origin()
 def login():
     if request.method == 'POST':
         data = json.loads(request.data)
@@ -93,6 +97,7 @@ def login():
 
 
 @app.route('/register', methods=['POST','GET'])
+# @cross_origin()
 def register():
     if request.method == 'POST':
         data = json.loads(request.data)
@@ -105,7 +110,7 @@ def register():
             users.insert({'username': data['username'], 'password': hashpass})
             session['username'] = data['username']
             
-            make_dir('users/', session['username'] + '/images')
+            make_dir('users/', data['username'] + '/images')
 
             # http status code 200
             return jsonify(status=200,
@@ -120,16 +125,18 @@ def register():
 
     return render_template('register.html')
 
-# @app.route('/detection/url', methods=['POST'])
-# @token_require
-# def mainUrlDetection():
-#     print('detection url')
-#     requestData=str(request.data,'utf-8')
-#     data = json.loads(requestData)
-#     imgUrl= data['url']
-#     modelName = data['model']
-#     img = Image.open(urllib.request.urlopen(imgUrl))
-#     return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
+@app.route('/detection/url', methods=['POST'])
+@token_require
+def mainUrlDetection():
+    requestData=str(request.data,'utf-8')
+    data = json.loads(requestData)
+    imgUrl= data['url']
+    modelName = data['model']
+
+    username = get_username(request.headers['Authorization'])
+    img = Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
+
+    return jsonify(status=200,message='Uploaded ok!'),200
 
 @app.route('/detection/file', methods=['POST'])
 @token_require
@@ -137,9 +144,8 @@ def main2():
     img = request.files["image"].read();
     model = request.form.to_dict(flat=False)['model'][0];
 
-    users = mongo.db.users
     username = get_username(request.headers['Authorization'])
-    Image.open(io.BytesIO(img)).save('/users/{0}/images/{0}.png'.format(username))
+    Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
 
     return jsonify(status=200,message='Uploaded ok!'),200
 
