@@ -116,7 +116,7 @@ class HomePageBloc extends BaseBloc {
   handleDetectImage(BaseEvent event) async {
     loadingSink.add(true);
     print('Detect image');
-    Future.delayed(Duration(seconds: 2), () {
+//    Future.delayed(Duration(seconds: 2), () {
       DetectImageEvent e = event as DetectImageEvent;
       if (e.urlImage != null) {
         _detectRepos.detectByURL(e.urlImage, e.modelName).then((result) {
@@ -137,6 +137,6 @@ class HomePageBloc extends BaseBloc {
         });
       }
       loadingSink.add(false);
-    });
+//    });
   }
 }

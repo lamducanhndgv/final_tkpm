@@ -1,9 +1,12 @@
 import 'package:application/base/base_event.dart';
+import 'package:application/data/spref/spref.dart';
 import 'package:application/event/change_ip_complete.dart';
 import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
 import 'package:application/event/login_success_event.dart';
+import 'package:application/network/server.dart';
 import 'package:application/shared/assets.dart';
+import 'package:application/shared/constant.dart';
 import 'package:application/shared/network_image.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
 import 'package:application/shared/widget/loading_task.dart';
@@ -61,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       Scaffold.of(context).showSnackBar(snackBar);
     }
-    if(event is ChangeIPComplete){
+    if (event is ChangeIPComplete) {
       final snackBar = SnackBar(
         content: Text('Change server address complete'),
         backgroundColor: Colors.green,
@@ -69,6 +72,13 @@ class _LoginPageState extends State<LoginPage> {
       );
       Scaffold.of(context).showSnackBar(snackBar);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print('init for ip ');
+    initForOldIP();
   }
 
   bool _visible = false;
@@ -170,14 +180,14 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.yellow[250],
             elevation: 2.0,
             child: Icon(FontAwesomeIcons.arrowRight),
-            onPressed: enable?() {
-              bloc.event.add(ChangeIPEvent(
-                newIP: _cServer.text
-              ));
-              setState(() {
-                _visible=!_visible;
-              });
-            }:null),
+            onPressed: enable
+                ? () {
+                    bloc.event.add(ChangeIPEvent(newIP: _cServer.text));
+                    setState(() {
+                      _visible = !_visible;
+                    });
+                  }
+                : null),
       ),
     );
   }
@@ -194,11 +204,10 @@ class _LoginPageState extends State<LoginPage> {
             errorText: msg,
           ),
           controller: _cServer,
-          onChanged: (value){
+          onChanged: (value) {
             bloc.ipSink.add(value);
           },
-          onSubmitted: (value) {
-            },
+          onSubmitted: (value) {},
         ),
       ),
     );
@@ -355,5 +364,13 @@ class _LoginPageState extends State<LoginPage> {
             )),
       ),
     );
+  }
+
+  initForOldIP() async {
+    var oldIP = await SPref.instance.get(SPrefCache.CURRENT_IP_SERVER);
+    if (oldIP != null) {
+      print('Set ip to $oldIP by spref');
+      DetectClient.setServerIP(oldIP);
+    }
   }
 }

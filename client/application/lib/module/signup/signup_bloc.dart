@@ -6,6 +6,7 @@ import 'package:application/event/register_fail_event.dart';
 import 'package:application/event/register_success_event.dart';
 import 'package:application/event/signup_event.dart';
 import 'package:application/shared/constant.dart';
+import 'package:application/shared/models/ConfirmType.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
@@ -13,7 +14,7 @@ import 'package:rxdart/rxdart.dart';
 class SignUpBloc extends BaseBloc {
   final _username = BehaviorSubject<String>();
   final _password = BehaviorSubject<String>();
-  final _confirmPass = BehaviorSubject<String>();
+  final _confirmPass = BehaviorSubject<ConfirmType>();
   final _btnSignUp = BehaviorSubject<bool>();
   UserRepo _userRepo;
 
@@ -25,10 +26,12 @@ class SignUpBloc extends BaseBloc {
   combineFormRegister() {
     Rx.combineLatest3(_username, _password, _confirmPass,
         (username, password, confirm) {
+      print('Confirm type');
+      print(confirm.runtimeType.toString());
       return Validation.isPassValid(password, MIN_LENGTH_REGISTER) &&
           Validation.isUsernameValid(username,MIN_LENGTH_REGISTER) &&
-          Validation.isPassValid(confirm,MIN_LENGTH_REGISTER) &&
-          ( password.compareTo(confirm)==0);
+          Validation.isPassValid(confirm.toString(),MIN_LENGTH_REGISTER) &&
+          ( password.compareTo(confirm.confirm.toString())==0);
     }).listen((event) {
       btnSink.add(event);
     });
@@ -49,12 +52,14 @@ class SignUpBloc extends BaseBloc {
       sink.add('Password too short');
   });
   // Want to check match password but can not do ? ?
-  var confirmValidate = StreamTransformer<String, String>.fromHandlers(
+  var confirmValidate = StreamTransformer<ConfirmType, ConfirmType>.fromHandlers(
       handleData: (confirm, sink) {
-    if (Validation.isPassValid(confirm,MIN_LENGTH_REGISTER)) {
+        // reach Length and match
+    if (Validation.isPassValid(confirm.confirm,MIN_LENGTH_REGISTER) && confirm.password.compareTo(confirm.confirm)==0) {
       sink.add(null);
-    } else
-      sink.add('Password too short');
+    } else if(!Validation.isPassValid(confirm.confirm, MIN_LENGTH_REGISTER))
+      sink.add(ConfirmType(confirm: "Password is too short"));
+    else sink.add(ConfirmType(confirm: "Confirm password do not match "));
   });
 
 
@@ -66,9 +71,9 @@ class SignUpBloc extends BaseBloc {
 
   Sink<String> get passwordSink => _password.sink;
 
-  Stream<String> get confirmStream => _confirmPass.stream.transform(confirmValidate);
+  Stream<ConfirmType> get confirmStream => _confirmPass.stream.transform(confirmValidate);
 
-  Sink<String> get confirmSink => _confirmPass.sink;
+  Sink<ConfirmType> get confirmSink => _confirmPass.sink;
 
   Stream<bool> get btnStream => _btnSignUp.stream;
 

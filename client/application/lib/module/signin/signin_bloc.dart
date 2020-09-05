@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:application/data/spref/spref.dart';
 import 'package:application/event/change_ip_complete.dart';
 import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
@@ -28,21 +29,21 @@ class SignInBloc extends BaseBloc {
 
   var usernameValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (username, sink) {
-    if (Validation.isUsernameValid(username,MIN_LENGTH_LOGIN)) {
+    if (Validation.isUsernameValid(username, MIN_LENGTH_LOGIN)) {
       sink.add(null);
     } else
       sink.add('Username too short');
   });
   var passwordValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (password, sink) {
-    if (Validation.isPassValid(password,MIN_LENGTH_LOGIN)) {
+    if (Validation.isPassValid(password, MIN_LENGTH_LOGIN)) {
       sink.add(null);
     } else
       sink.add('Password too short');
   });
   var ipValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (ipAddress, sink) {
-        if (Validation.isIPvalid(ipAddress))
+    if (Validation.isIPvalid(ipAddress))
       sink.add(null);
     else
       sink.add("IP invalid");
@@ -72,8 +73,8 @@ class SignInBloc extends BaseBloc {
 
   void combineSubjectToValid() {
     Rx.combineLatest2(_usernameSubject, _passwordSubject, (username, password) {
-      return Validation.isPassValid(password,MIN_LENGTH_LOGIN) &&
-          Validation.isUsernameValid(username,MIN_LENGTH_LOGIN);
+      return Validation.isPassValid(password, MIN_LENGTH_LOGIN) &&
+          Validation.isUsernameValid(username, MIN_LENGTH_LOGIN);
     }).listen((event) {
       btnSink.add(event);
     });
@@ -103,7 +104,7 @@ class SignInBloc extends BaseBloc {
     }
   }
 
-  handleChangeIPEvent(BaseEvent event) async{
+  handleChangeIPEvent(BaseEvent event) async {
     ChangeIPEvent e = event as ChangeIPEvent;
     print('Call change from bloc');
     await _userRepo.changeServerAddress(e.newIP);
@@ -116,7 +117,7 @@ class SignInBloc extends BaseBloc {
 //    Future.delayed(Duration(seconds: 5), () { //  DELETE THIS ROW
     SignInEvent e = event as SignInEvent;
     _userRepo.signIn(e.username, e.pass).then((user) {
-      print('user ne' + user.toString());
+      SPref.instance.set(SPrefCache.USER_NAME, e.username);
       processSink.add(LoginSuccessEvent(user));
     }, onError: (e) {
       btnSink.add(true);

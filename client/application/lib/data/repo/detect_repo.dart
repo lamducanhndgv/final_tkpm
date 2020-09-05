@@ -17,13 +17,13 @@ class DetectRepos{
       var response = await _detectService.sendImageToDetect(imageFile,model);
       var r = await response.data;
       c.complete(r);
-    } on DioError catch (e) {
-      print(e.response.data);
-      c.completeError('${e.response}');
-    } catch (e) {
-      print(e.toString());
+    } on DioError catch (e1) {
+      print(String.fromCharCodes(e1.response.data));
+      c.completeError('${(String.fromCharCodes(e1.response.data))}');
+    } catch (e2) {
+      print(e2.response.data.runtimeType.toString());
       print('Catch error from user repos');
-      c.completeError(e);
+      c.completeError(e2);
     }
     return c.future;
   }
@@ -35,13 +35,13 @@ class DetectRepos{
       var response = await _detectService.sendURLToDetect(url,model);
       var r = await response.data;
       c.complete(r);
-    } on DioError catch (e) {
-      print(e.response.data);
-      c.completeError('${e.response}');
-    } catch (e) {
-      print(e.toString());
+    } on DioError catch (e1) {
+      print(String.fromCharCodes(e1.response.data));
+      c.completeError('${(String.fromCharCodes(e1.response.data))}');
+    } catch (e2) {
+      print(e2.response.data.runtimeType.toString());
       print('Catch error from user repos');
-      c.completeError(e);
+      c.completeError(e2);
     }
     return c.future;
   }
