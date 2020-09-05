@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:application/data/spref/spref.dart';
 import 'package:application/event/change_ip_complete.dart';
 import 'package:application/event/change_ip_event.dart';
 import 'package:application/event/login_fail_event.dart';
@@ -116,7 +117,7 @@ class SignInBloc extends BaseBloc {
 //    Future.delayed(Duration(seconds: 5), () { //  DELETE THIS ROW
     SignInEvent e = event as SignInEvent;
     _userRepo.signIn(e.username, e.pass).then((user) {
-      print('user ne' + user.toString());
+      SPref.instance.set(SPrefCache.USER_NAME,e.username);
       processSink.add(LoginSuccessEvent(user));
     }, onError: (e) {
       btnSink.add(true);

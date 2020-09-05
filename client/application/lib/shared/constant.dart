@@ -1,6 +1,6 @@
 class SPrefCache {
   static const KEY_TOKEN = 'key_token';
-  static const KEY_USER = 'key_user';
+  static const USER_NAME = 'user_name';
   static const MODEL_NAMES='model_name';
   static const CURRENT_IP_SERVER = 'current_server';
 }
