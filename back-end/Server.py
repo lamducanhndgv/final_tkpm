@@ -2,8 +2,8 @@ from flask import Flask,  render_template, url_for, request, session, redirect, 
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
 from middlewares.token_require import token_require
-from helpers.createDir import make_dir
-from helpers.createDir import is_path_existing
+from helpers.createDir import make_dir, is_path_existing
+from helpers.getUsername import get_username
 from werkzeug.utils import secure_filename
 from PIL import Image
 from io import BytesIO
@@ -70,7 +70,7 @@ def login():
         if login_user:
             if bcrypt.checkpw(data['password'].encode('utf-8'), login_user['password']):
                 session['username'] = data['username']
-                encoded_jwt = jwt.encode({'id': str(login_user['_id'])}, 'secret', algorithm='HS256')
+                encoded_jwt = jwt.encode({'username': data['username']}, 'secret', algorithm='HS256')
 
                 listmodels = []
                 for models in models.find({'username': data['username']}):
@@ -136,9 +136,11 @@ def register():
 def main2():
     img = request.files["image"].read();
     model = request.form.to_dict(flat=False)['model'][0];
-    Image.open(io.BytesIO(img)).save('/users/images/{}.png'.format(session['username']))
-    # predict
-    # return create_response_from_image(img,default_nets,default_layer,default_labels,default_colors)
+
+    users = mongo.db.users
+    username = get_username(request.headers['Authorization'])
+    Image.open(io.BytesIO(img)).save('/users/{0}/images/{0}.png'.format(username))
+
     return jsonify(status=200,message='Uploaded ok!'),200
 
 @app.route('/logout', methods=['POST'])
