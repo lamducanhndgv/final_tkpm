@@ -93,6 +93,7 @@ class SignUpBloc extends BaseBloc {
     loadingSink.add(true);
     SignUpEvent e = event as SignUpEvent;
     _userRepo.signUp(e.username, e.pass).then((user) {
+      btnSink.add(true);
       loadingSink.add(false);
       processSink.add(RegisterSuccess());
     }, onError: (e) {

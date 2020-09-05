@@ -23,6 +23,7 @@ class HomePageBloc extends BaseBloc {
   final _urlSubject = BehaviorSubject<String>();
   final _btnChangeImageURLSubject = BehaviorSubject<bool>();
   final _btnDetectSubject = BehaviorSubject<bool>();
+
   @override
   void dispose() {
     super.dispose();
@@ -64,8 +65,10 @@ class HomePageBloc extends BaseBloc {
   Stream<bool> get btnChangeImgURStream => _btnChangeImageURLSubject.stream;
 
   Sink<bool> get btnChangeImgSink => _btnChangeImageURLSubject.sink;
+  Stream<bool> get btnDetectStream => _btnDetectSubject.stream;
 
-  
+  Sink<bool> get btnDetectSink => _btnDetectSubject.sink;
+
   @override
   void dispatchEvent(BaseEvent event) {
     switch (event.runtimeType) {
@@ -73,7 +76,7 @@ class HomePageBloc extends BaseBloc {
         handleChangeImg(event);
         break;
       case ChangeImgInGallery:
-        handleChooseInGalleyry(event);
+        handleChooseInGallery(event);
         break;
       case ChangeImgByCamera:
         handleChooseByCamera(event);
@@ -91,7 +94,7 @@ class HomePageBloc extends BaseBloc {
     processSink.add(ChangeImgURLComplete(buffer: newBuf));
   }
 
-  handleChooseInGalleyry(BaseEvent event) async {
+  handleChooseInGallery(BaseEvent event) async {
     ChangeImgInGallery e = event as ChangeImgInGallery;
     // ignore: deprecated_member_use
     var pickedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -115,28 +118,35 @@ class HomePageBloc extends BaseBloc {
 
   handleDetectImage(BaseEvent event) async {
     loadingSink.add(true);
-    print('Detect image');
-//    Future.delayed(Duration(seconds: 2), () {
-      DetectImageEvent e = event as DetectImageEvent;
-      if (e.urlImage != null) {
-        _detectRepos.detectByURL(e.urlImage, e.modelName).then((result) {
-          processSink.add(DetectImageComplete(bytesImage: result));
-        }, onError: (error) {
-          print(error.toString());
-          loadingSink.add(false);
-          processSink.add(DetectImageError(message:error.toString()));
-        });
-      } else if (e.fileImage != null) {
-        _detectRepos.detectByImage(e.fileImage, e.modelName).then((result) {
-          print(result.length);
-          processSink.add(DetectImageComplete(bytesImage:result));
-        }, onError: (error) {
-          print(error.toString());
-          loadingSink.add(false);
-          processSink.add(DetectImageError(message:error.toString()));
-        });
-      }
-      loadingSink.add(false);
-//    });
+    btnDetectSink.add(false);
+    print('Detect image, loading sink true');
+    // Future.delayed(Duration(seconds: 15), () {
+    DetectImageEvent e = event as DetectImageEvent;
+    if (e.urlImage != null) {
+      _detectRepos.detectByURL(e.urlImage, e.modelName).then((result) {
+        loadingSink.add(false);
+        btnDetectSink.add(true);
+        processSink.add(DetectImageComplete(bytesImage: result));
+      }, onError: (error) {
+        print(error.toString());
+        loadingSink.add(false);
+        btnDetectSink.add(true);
+        print('Detect image, loading sink FALSE12');
+        processSink.add(DetectImageError(message: error.toString()));
+      });
+    } else if (e.fileImage != null) {
+      _detectRepos.detectByImage(e.fileImage, e.modelName).then((result) {
+        print(result.length);
+        loadingSink.add(false);
+        btnDetectSink.add(true);
+        processSink.add(DetectImageComplete(bytesImage: result));
+      }, onError: (error) {
+        print(error.toString());
+        loadingSink.add(false);
+        btnDetectSink.add(true);
+        print('Detect image, loading sink FALSE2');
+        processSink.add(DetectImageError(message: error.toString()));
+      });
+    }
   }
 }

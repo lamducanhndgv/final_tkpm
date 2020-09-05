@@ -7,8 +7,8 @@ class DetectClient {
   static var urlServer = 'http://192.168.1.2:$PORT';
   static BaseOptions _options = new BaseOptions(
     baseUrl: urlServer,
-    connectTimeout: 5000,
-    receiveTimeout: 3000,
+    connectTimeout: 20000,
+    receiveTimeout: 10000,
   );
   static Dio _dio = Dio(_options);
 

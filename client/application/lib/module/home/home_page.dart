@@ -70,26 +70,25 @@ class _HomePageState extends State<HomePage> {
 
   Uri apiUrl;
   String dropdownValue;
-  var _isDetecting = false;
+  // var _isDetecting = false;
   var hasModels = false;
   List<String> listModelNames;
 
   @override
   void initState() {
-    _urlPicture = null;//new StringBuffer();
+    _urlPicture = null; //new StringBuffer();
     checkLoginStatusAndIP();
     initForDropdown();
     super.initState();
-
   }
 
   checkLoginStatusAndIP() async {
     var ip = await SPref.instance.get(SPrefCache.CURRENT_IP_SERVER);
-    if(ip!=null) {
+    if (ip != null) {
       DetectClient.setServerIP(ip);
     }
     var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
-    if (token == null || ip==null) {
+    if (token == null || ip == null) {
       print("Token null or ip null");
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => SignIn()),
@@ -106,6 +105,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   _buildHomepageView(BuildContext context) {
+    print('Set state again');
     return Provider<HomePageBloc>.value(
       value: HomePageBloc(detectRepos: Provider.of(context)),
       child: Consumer<HomePageBloc>(
@@ -137,9 +137,9 @@ class _HomePageState extends State<HomePage> {
                       margin: const EdgeInsets.only(top: 30, right: 10),
                       child: FlatButton(
                         onPressed: () {
-                          SPref.instance.set(SPrefCache.KEY_TOKEN,null);
-                          SPref.instance.set(SPrefCache.MODEL_NAMES,null);
-                          SPref.instance.set(SPrefCache.USER_NAME,null);
+                          SPref.instance.set(SPrefCache.KEY_TOKEN, null);
+                          SPref.instance.set(SPrefCache.MODEL_NAMES, null);
+                          SPref.instance.set(SPrefCache.USER_NAME, null);
                           Navigator.pushReplacementNamed(context, '/home');
                         },
                         shape: RoundedRectangleBorder(
@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                                   IconButton(
                                     color: Colors.white,
                                     icon: Icon(FontAwesomeIcons.link),
-                                    onPressed: () {
+                                    onPressed:() {
                                       showDialog(
                                           child: Dialog(
                                             child: Column(
@@ -264,14 +264,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _decideImage({Uint8List base}) {
-    if (base != null)
-      return PhotoView(
-        imageProvider: new Image.memory(
-          base,
-          width: 400,
-          height: 400,
-        ).image,
-      );
+    if (base != null) {
+      print('Base not null');
+      try {
+        print('try Base not null');
+        print(base);
+        return PhotoView(
+          imageProvider: new Image.memory(
+            base,
+            width: 400,
+            height: 400,
+          ).image,
+        );
+      } catch (e) {
+        print('catch Base not null');
+
+        print(e.toString());
+        return Image(
+          image: AssetImage('assets/no_img.png'),
+        );
+      }
+    }
     if (_urlPicture != null && _urlPicture.toString().length > 5) {
       String url = _urlPicture.toString();
       try {
@@ -299,38 +312,50 @@ class _HomePageState extends State<HomePage> {
         height: 400,
       );
     print('file ');
+    print(_imageFile.path);
     return PhotoView(
         imageProvider: Image.file(_imageFile, fit: BoxFit.cover).image);
+
   }
 
   _buildButtonDetectImage(BuildContext context, HomePageBloc bloc) {
-    return FloatingActionButton(
-      heroTag: 'Detection',
-      child: Icon(
-        Icons.remove_red_eye,
-        color: Colors.pink,
-      ),
-      backgroundColor: Colors.white,
-      onPressed: _isDetecting != true
-          ? () {
-              print('clicked');
-              if( dropdownValue == null || dropdownValue.length<1)
-                {_buildSnackBar(context, "No model selected", Colors.red);  return;}
+    return StreamProvider<bool>.value(
+      initialData: true,
+      value: bloc.btnDetectStream,
+      child: Consumer<bool>(
+        builder: (context, enable,child)=>FloatingActionButton(
+          heroTag: 'Detection',
+          child: Icon(
+            Icons.remove_red_eye,
+            color: Colors.pink,
+          ),
+          backgroundColor: Colors.white,
+          onPressed:enable
+              ? () {
+                  print('clicked');
+                  if (dropdownValue == null || dropdownValue.length < 1) {
+                    _buildSnackBar(context, "No model selected", Colors.red);
+                    return;
+                  }
+                  if (_urlPicture != null) {
+                    print('send url event');
+                    // _isDetecting = true;
+                    bloc.event.add(DetectImageEvent(
+                        modelName: dropdownValue,
+                        urlImage: _urlPicture.toString()));
+                  } else if (_imageFile != null) {
+                    print('send file event');
+                    // _isDetecting = true;
+                    bloc.event.add(DetectImageEvent(
+                        modelName: dropdownValue, fileImage: _imageFile));
+                  } else{
+                    _buildSnackBar(context, "Select image to detect", Colors.red);
 
-              if (_urlPicture != null) {
-                print('send url event');
-                _isDetecting = true;
-                bloc.event.add(DetectImageEvent(
-                    modelName: dropdownValue,
-                    urlImage: _urlPicture.toString()));
-              } else if (_imageFile != null) {
-                print('send file event');
-                _isDetecting = true;
-                bloc.event.add(DetectImageEvent(
-                    modelName: dropdownValue, fileImage: _imageFile));
-              }
-            }
-          : null,
+                  }
+                }
+              : null,
+        ),
+      ),
     );
   }
 
@@ -404,33 +429,37 @@ class _HomePageState extends State<HomePage> {
 
   handleHomepageEvent(BaseEvent event) {
     if (event is ChangeImgURLComplete) {
-      setState(() {
-        _urlPicture = event.buffer;
-        _base64 = null;
-        _imageFile = null;
-      });
+      print('event change url complete');
+      _urlPicture = event.buffer;
+      _base64 = null;
+      _imageFile = null;
+      setState(() {});
       _buildSnackBar(context, 'Change url image complete', Colors.green);
     }
     if (event is ChangeImgFileComplete) {
-      setState(() {
-        _urlPicture = null;
-        _imageFile = event.imageFile;
-        _base64 = null;
-      });
+      print('event change image file complete');
+      _imageFile = event.imageFile;
+      _urlPicture = null;
+      _base64 = null;
+      setState(() {});
       _buildSnackBar(context, 'Change file image complete', Colors.green);
     }
     if (event is ChangeImgFileNotPick) {
+      print('event not change image file');
       _buildSnackBar(context, 'Cancel choose image', Colors.grey);
     }
     if (event is DetectImageComplete) {
-      _isDetecting = false;
+      print('event detect complete');
+      // _isDetecting = false;
       _buildSnackBar(context, "Detect complete", Colors.green);
-      setState(() {
-        _base64 = event.bytesImage;
-      });
+      _base64 = event.bytesImage;
+      _imageFile = null;
+      _urlPicture = null;
+      setState(() {});
     }
     if (event is DetectImageError) {
-      _isDetecting = false;
+      print('event detect error');
+      // _isDetecting = false;
       _buildSnackBar(context, "Error due to ${event.message}", Colors.red);
     }
   }
@@ -439,7 +468,7 @@ class _HomePageState extends State<HomePage> {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: color,
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: 1),
     );
     Scaffold.of(context).showSnackBar(snackBar);
   }

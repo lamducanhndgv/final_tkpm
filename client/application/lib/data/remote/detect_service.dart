@@ -14,7 +14,6 @@ class DetectService {
       ),
       "model": model,
     });
-    print(data.toString());
     return DetectClient.instance.dio.post('/detection/file',
         data: data, options: Options(responseType: ResponseType.bytes));
   }

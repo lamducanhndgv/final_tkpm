@@ -118,6 +118,8 @@ class SignInBloc extends BaseBloc {
     SignInEvent e = event as SignInEvent;
     _userRepo.signIn(e.username, e.pass).then((user) {
       SPref.instance.set(SPrefCache.USER_NAME, e.username);
+      btnSink.add(true);
+      loadingSink.add(false);
       processSink.add(LoginSuccessEvent(user));
     }, onError: (e) {
       btnSink.add(true);
