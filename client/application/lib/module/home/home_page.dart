@@ -137,24 +137,9 @@ class _HomePageState extends State<HomePage> {
                       margin: const EdgeInsets.only(top: 30, right: 10),
                       child: FlatButton(
                         onPressed: () {
-                          SPref.instance.set(SPrefCache.KEY_TOKEN, null);
-                          SPref.instance.set(SPrefCache.MODEL_NAMES, null);
-                          Navigator.pushReplacementNamed(context, '/home');
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40.0)),
-                        color: Colors.black12,
-                        child: Text("Alo ha",
-                            style:
-                            TextStyle(color: Colors.black, fontSize: 18.0)),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 30, right: 10),
-                      child: FlatButton(
-                        onPressed: () {
-                          SPref.instance.set(SPrefCache.KEY_TOKEN, null);
-                          SPref.instance.set(SPrefCache.MODEL_NAMES, null);
+                          SPref.instance.set(SPrefCache.KEY_TOKEN,null);
+                          SPref.instance.set(SPrefCache.MODEL_NAMES,null);
+                          SPref.instance.set(SPrefCache.USER_NAME,null);
                           Navigator.pushReplacementNamed(context, '/home');
                         },
                         shape: RoundedRectangleBorder(
