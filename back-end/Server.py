@@ -22,6 +22,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['MONGO_DBNAME'] = 'tkpm_final'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/tkpm_final'
+# app.config['MONGO_URI'] = 'mongodb://mongo:27017/tkpm_final'
 
 mongo = PyMongo(app)
 
@@ -40,11 +41,19 @@ def get_index():
 def post_index():
     req = request.form
     modelname = req.get('modelname')
+    config = req.get('config')
 
-    parent_dir = make_dir('users/', session['username'])
+    parent_dir = make_dir('users/'+session['username'])
+
     if is_path_existing(parent_dir+'/'+modelname):
         return jsonify(status=500, message='Models name exists!'),500
-    curr_dir = make_dir(parent_dir+'/', modelname)
+
+    model_dir = make_dir(parent_dir+'/'+modelname)
+
+    with open(model_dir+'/config.json', 'w') as out_file:
+        out_file.write(config)
+
+    curr_dir = make_dir(model_dir+'/source')
 
     f = request.files['file']
     filepath = curr_dir + '/' + secure_filename(f.filename)
@@ -67,10 +76,8 @@ def login():
         users = mongo.db.users
         models = mongo.db.models
 
-        # find username in database
         login_user = users.find_one({'username': data['username']})
 
-        # if username exist, then we check hashed password
         if login_user:
             if bcrypt.checkpw(data['password'].encode('utf-8'), login_user['password']):
                 session['username'] = data['username']
@@ -80,13 +87,11 @@ def login():
                 for models in models.find({'username': data['username']}):
                     listmodels.append(models['modelname'])
 
-                # if success return token and http status code 200
                 return jsonify(status=200,
                                 message='Login successfully!',
                                 listmodels=listmodels,
                                 token=encoded_jwt.decode('utf-8') ),200
 
-        # http status code 401
         return jsonify(status=401, 
                         message='Incorrect username or password'),401
     
@@ -108,15 +113,12 @@ def register():
         if existing_user is None:
             hashpass = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             users.insert({'username': data['username'], 'password': hashpass})
-            session['username'] = data['username']
             
-            make_dir('users/', data['username'] + '/images')
+            make_dir('users/' + data['username'] + '/images')
 
-            # http status code 200
             return jsonify(status=200,
                             message='Register completed!'),200
         
-        # http status code 400
         return jsonify(status=400,
                         message='Username is already exists!'),400
     
@@ -134,7 +136,7 @@ def mainUrlDetection():
     modelName = data['model']
 
     username = get_username(request.headers['Authorization'])
-    img = Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
+    Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
 
     return jsonify(status=200,message='Uploaded ok!'),200
 
