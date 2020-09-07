@@ -17,7 +17,7 @@ class Framework(Enum):
 class RequestInference:
     TESTING = 0
     DATA_FOLDER = None
-    _hosts = ["http://inferenceserver01:5000", "http://inferenceserver02:5001"]
+    _hosts = ["http://inferenceserver01:5000", "http://inferenceserver02:5000"]
 
     def __init__(self, userid, modelid, img):
         self._userid = userid

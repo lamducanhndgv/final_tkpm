@@ -7,7 +7,7 @@ import bcrypt
 import jwt
 import zipfile36 as zipfile
 from PIL import Image
-from flask import Flask, render_template, request, session, redirect, jsonify
+from flask import Flask, render_template, request, session, redirect, jsonify, Response
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from werkzeug.utils import secure_filename
@@ -22,11 +22,20 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+TESTING = int(os.environ["APP_TESTING"])
+
 app.config['MONGO_DBNAME'] = 'tkpm_final'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/tkpm_final'
-app.config['DATA_FOLDER'] = "E:\\LamAnh\\ThietKePhanMem\\final_project\\data"
+app.config['MONGO_URI'] = 'mongodb://{}:27017/tkpm_final'.format("localhost" if TESTING else "mongod")
+app.config['DATA_FOLDER'] = "E:\\LamAnh\\ThietKePhanMem\\final_project\\data" if TESTING else "/data"
 
 mongo = PyMongo(app)
+
+
+def make_bytes_response(url):
+    with open(url, "rb") as image:
+        f = image.read()
+        b = bytearray(f)
+    return Response(response=b, status=200, mimetype="image/jpeg")
 
 
 @app.route('/', methods=['GET'])
@@ -42,22 +51,20 @@ def get_index():
 @token_require
 def post_index():
     req = request.form
-    modelname = req.get('modelname')
+    model_name = req.get('modelname')
     config = req.get('config')
 
     os.chdir(app.config["DATA_FOLDER"])
 
     parent_dir = make_dir('users/' + session['username'])
 
-    if is_path_existing(parent_dir + '/' + modelname):
+    if is_path_existing(parent_dir + '/' + model_name):
         return jsonify(status=500, message='Models name exists!'), 500
 
-    model_dir = make_dir(parent_dir + '/' + modelname)
+    model_dir = make_dir(parent_dir + '/' + model_name)
 
-    print(config)
-
-    # with open(model_dir + '/config.json', 'w') as out_file:
-    #     out_file.write(config)
+    with open(model_dir + '/config.json', 'w') as out_file:
+        out_file.write(config)
 
     curr_dir = make_dir(model_dir + '/source')
 
@@ -70,7 +77,7 @@ def post_index():
 
     # insert model's name of user into database
     models = mongo.db.models
-    models.insert({'username': session['username'], 'modelname': modelname})
+    models.insert({'username': session['username'], 'modelname': model_name})
 
     return jsonify(status=200, message='File upload successful!'), 200
 
@@ -122,7 +129,7 @@ def register():
             users.insert({'username': data['username'], 'password': hashpass})
             session['username'] = data['username']
             os.chdir(app.config["DATA_FOLDER"])
-            make_dir('users/', data['username'] + '/images')
+            make_dir('users/' + data['username'] + '/images')
 
             return jsonify(status=200,
                            message='Register completed!'), 200
@@ -152,9 +159,8 @@ def mainUrlDetection():
     img = Image.open(urllib.request.urlopen(img_url)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
 
     res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
-    print(res)
 
-    return jsonify(status=200, message='Uploaded ok!'), 200
+    return make_bytes_response(res)
 
 
 @app.route('/detection/file', methods=['POST'])
@@ -170,9 +176,8 @@ def main2():
     Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
 
     res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
-    print(res)
 
-    return jsonify(status=200, message='Uploaded ok!'), 200
+    return make_bytes_response(res)
 
 
 @app.route('/logout', methods=['POST'])

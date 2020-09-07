@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  api-server:
+    image: "lamducanhndgv/tkpm:apiserver"
+    container_name: "apiserver"
+    restart: "always"
+    environment:
+      APP_TESTING: 0
+    networks:
+      - tkpm-network
+    ports:
+      - "8888:8888"
+    volumes:
+      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
+
+  tensorflow-pytorch-opencv-server:
+    image: "lamducanhndgv/tkpm:tensorflow_pytorch_opencv"
+    container_name: "inferenceserver01"
+    restart: "always"
+    networks:
+      - tkpm-network
+    volumes:
+      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
+      - E:/LamAnh/ThietKePhanMem/final_project/inference-server:/main
+    command: python /main/main.py
+
+
+  darknet-server:
+    image: "lamducanhndgv/tkpm:darknet"
+    container_name: "inferenceserver02"
+    restart: "always"
+    networks:
+      - tkpm-network
+    volumes:
+      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
+      - E:/LamAnh/ThietKePhanMem/final_project/inference-server:/main
+    command: python /main/main.py
+
+  mongod:
+    image: "mongo:latest"
+    container_name: "mongo"
+    restart: "always"
+    environment:
+      MONGO_INITDB_DATABASE: tkpm_final
+    networks:
+      - tkpm-network
+    ports:
+      - "27017:27017"
+
+networks:                             # Create network
+  tkpm-network:
+    driver: bridge
+
