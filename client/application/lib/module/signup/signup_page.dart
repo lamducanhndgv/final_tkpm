@@ -1,7 +1,7 @@
 import 'package:application/base/base_event.dart';
-import 'package:application/event/register_fail_event.dart';
-import 'package:application/event/register_success_event.dart';
-import 'package:application/event/signup_event.dart';
+import 'package:application/event/registerpage_register_fail_event.dart';
+import 'package:application/event/registerpage_register_success_event.dart';
+import 'package:application/event/registerpage_signup_event.dart';
 import 'package:application/module/signup/signup_bloc.dart';
 import 'package:application/shared/assets.dart';
 import 'package:application/shared/models/ConfirmType.dart';
@@ -72,24 +72,28 @@ class _SignupPageState extends State<SignupPage> {
                           height: 10.0,
                         ),
                         _buildLoginForm(bloc),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            FloatingActionButton(
-                              mini: true,
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              backgroundColor: Colors.blue,
-                              child: Icon(Icons.arrow_back),
-                            )
-                          ],
-                        )
+                        _buildBackButton(context)
                       ],
                     ),
                   )));
         },
       ),
+    );
+  }
+
+  Row _buildBackButton(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        FloatingActionButton(
+          mini: true,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          backgroundColor: Colors.blue,
+          child: Icon(Icons.arrow_back),
+        )
+      ],
     );
   }
 

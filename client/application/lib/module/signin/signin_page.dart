@@ -1,9 +1,9 @@
 import 'package:application/base/base_event.dart';
 import 'package:application/data/spref/spref.dart';
-import 'package:application/event/change_ip_complete.dart';
-import 'package:application/event/change_ip_event.dart';
-import 'package:application/event/login_fail_event.dart';
-import 'package:application/event/login_success_event.dart';
+import 'package:application/event/loginpage_change_ip_complete.dart';
+import 'package:application/event/loginpage_change_ip_event.dart';
+import 'package:application/event/loginpage_login_fail_event.dart';
+import 'package:application/event/loginpage_login_success_event.dart';
 import 'package:application/network/server.dart';
 import 'package:application/shared/assets.dart';
 import 'package:application/shared/constant.dart';
@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/user_service.dart';
 import 'package:application/data/repo/user_repo.dart';
-import 'package:application/event/singin_event.dart';
+import 'package:application/event/loginpage_singin_event.dart';
 import 'package:application/module/signin/signin_bloc.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
       final snackBar = SnackBar(
         content: Text(event.errMessage),
         backgroundColor: Colors.red,
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 2),
       );
       Scaffold.of(context).showSnackBar(snackBar);
     }
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
       final snackBar = SnackBar(
         content: Text('Change server address complete'),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 2),
       );
       Scaffold.of(context).showSnackBar(snackBar);
     }
@@ -95,48 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                   color: Colors.blue.shade100,
                   child: ListView(
                     children: <Widget>[
-                      Row(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 5),
-                            child: FloatingActionButton(
-                              heroTag: 'ClickRemoteServer',
-                              foregroundColor: Colors.black54,
-                              backgroundColor: Colors.yellow[250],
-                              elevation: 2.0,
-                              child: Icon(Icons.settings_remote),
-                              onPressed: () {
-                                setState(() {
-                                  _visible = !_visible;
-                                });
-                              },
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 10, left: 10),
-                            child: AnimatedOpacity(
-                                // If the widget is visible, animate to 0.0 (invisible).
-                                // If the widget is hidden, animate to 1.0 (fully visible).
-                                opacity: _visible ? 1.0 : 0.0,
-                                duration: Duration(milliseconds: 1000),
-                                // The green box must be a child of the AnimatedOpacity widget.
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 200.0,
-                                      height: 50.0,
-                                      color: Colors.white,
-                                      child: _buildChangeIP(bloc),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.only(left: 10),
-                                      child: _buildButtonChange(bloc),
-                                    ),
-                                  ],
-                                )),
-                          ),
-                        ],
-                      ),
+                      _buildChangeIPRow(bloc),
                       SizedBox(
                         height: 10.0,
                       ),
@@ -149,23 +108,71 @@ class _LoginPageState extends State<LoginPage> {
                         height: 10.0,
                       ),
                       _buildLoginForm(bloc),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          FlatButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: Text("Sign Up",
-                                style: TextStyle(
-                                    color: Colors.blue, fontSize: 18.0)),
-                          )
-                        ],
-                      )
+                      _buildSignUpButton(context)
                     ],
                   ),
                 )));
       }),
+    );
+  }
+
+  Row _buildSignUpButton(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/register');
+          },
+          child: Text("Sign Up",
+              style: TextStyle(color: Colors.blue, fontSize: 18.0)),
+        )
+      ],
+    );
+  }
+
+  Row _buildChangeIPRow(SignInBloc bloc) {
+    return Row(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 5),
+          child: FloatingActionButton(
+            heroTag: 'ClickRemoteServer',
+            foregroundColor: Colors.black54,
+            backgroundColor: Colors.yellow[250],
+            elevation: 2.0,
+            child: Icon(Icons.settings_remote),
+            onPressed: () {
+              setState(() {
+                _visible = !_visible;
+              });
+            },
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 10, left: 10),
+          child: AnimatedOpacity(
+              // If the widget is visible, animate to 0.0 (invisible).
+              // If the widget is hidden, animate to 1.0 (fully visible).
+              opacity: _visible ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 1000),
+              // The green box must be a child of the AnimatedOpacity widget.
+              child: Row(
+                children: [
+                  Container(
+                    width: 200.0,
+                    height: 50.0,
+                    color: Colors.white,
+                    child: _buildChangeIP(bloc),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 10),
+                    child: _buildButtonChange(bloc),
+                  ),
+                ],
+              )),
+        ),
+      ],
     );
   }
 

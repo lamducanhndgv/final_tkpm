@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:application/network/server.dart';
 import 'package:application/shared/models/User.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
@@ -23,10 +24,11 @@ class UserRepo {
       if (user != null) {
         SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
         SPref.instance.set(SPrefCache.MODEL_NAMES,user.modelNames);
+        SPref.instance.set(SPrefCache.CURRENT_IP_SERVER, DetectClient.urlServer);
         c.complete(user);
       }
     } on DioError catch (e) {
-      print(e.response.data);
+      print('~~~~~~~~ ${e.response.data} ~~~~~~~dio error ');
       c.completeError('${e.response.data['message']}');
     }
     catch (e) {

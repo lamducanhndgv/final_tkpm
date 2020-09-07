@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:application/data/spref/spref.dart';
-import 'package:application/event/change_ip_complete.dart';
-import 'package:application/event/change_ip_event.dart';
-import 'package:application/event/login_fail_event.dart';
-import 'package:application/event/login_success_event.dart';
+import 'package:application/event/loginpage_change_ip_complete.dart';
+import 'package:application/event/loginpage_change_ip_event.dart';
+import 'package:application/event/loginpage_login_fail_event.dart';
+import 'package:application/event/loginpage_login_success_event.dart';
 import 'package:application/shared/constant.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/widgets.dart';
 import 'package:application/base/base_bloc.dart';
 import 'package:application/base/base_event.dart';
 import 'package:application/data/repo/user_repo.dart';
-import 'package:application/event/singin_event.dart';
+import 'package:application/event/loginpage_singin_event.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SignInBloc extends BaseBloc {
@@ -43,7 +43,7 @@ class SignInBloc extends BaseBloc {
   });
   var ipValid = StreamTransformer<String, String>.fromHandlers(
       handleData: (ipAddress, sink) {
-    if (Validation.isIPvalid(ipAddress))
+    if (Validation.isIPvalid(ipAddress)|| Validation.isValidURL(ipAddress))
       sink.add(null);
     else
       sink.add("IP invalid");
@@ -114,10 +114,9 @@ class SignInBloc extends BaseBloc {
   handleSignInEvent(event) {
     btnSink.add(false);
     loadingSink.add(true);
-//    Future.delayed(Duration(seconds: 5), () { //  DELETE THIS ROW
+
     SignInEvent e = event as SignInEvent;
     _userRepo.signIn(e.username, e.pass).then((user) {
-      SPref.instance.set(SPrefCache.USER_NAME, e.username);
       btnSink.add(true);
       loadingSink.add(false);
       processSink.add(LoginSuccessEvent(user));
@@ -125,9 +124,8 @@ class SignInBloc extends BaseBloc {
       btnSink.add(true);
       loadingSink.add(false);
       processSink.add(LoginFailEvent(e.toString()));
-      print(e);
+      print('hello ${e.toString()}');
     });
-//    });  // DELETE THIS ROW TOO
   }
 
   @override

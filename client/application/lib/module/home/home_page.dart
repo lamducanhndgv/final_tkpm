@@ -6,15 +6,15 @@ import 'package:application/data/remote/user_service.dart';
 import 'package:application/data/repo/detect_repo.dart';
 import 'package:application/data/repo/user_repo.dart';
 import 'package:application/data/spref/spref.dart';
-import 'package:application/event/change_image_cam_event.dart';
-import 'package:application/event/change_image_file.dart';
-import 'package:application/event/change_image_file_complete.dart';
-import 'package:application/event/change_image_file_notpick.dart';
-import 'package:application/event/change_image_url_complete.dart';
-import 'package:application/event/change_image_url_event.dart';
-import 'package:application/event/detect_image_complete.dart';
-import 'package:application/event/detect_image_error.dart';
-import 'package:application/event/detect_image_event.dart';
+import 'package:application/event/homepage_change_image_cam_event.dart';
+import 'package:application/event/homepage_change_image_file.dart';
+import 'package:application/event/homepage_change_image_file_complete.dart';
+import 'package:application/event/homepage_change_image_file_notpick.dart';
+import 'package:application/event/homepage_change_image_url_complete.dart';
+import 'package:application/event/homepage_change_image_url_event.dart';
+import 'package:application/event/homepage_detect_image_complete.dart';
+import 'package:application/event/homepage_detect_image_error.dart';
+import 'package:application/event/homepage_detect_image_event.dart';
 import 'package:application/module/home/home_bloc.dart';
 import 'package:application/module/signin/signin_page.dart';
 import 'package:application/network/server.dart';
@@ -70,6 +70,7 @@ class _HomePageState extends State<HomePage> {
 
   Uri apiUrl;
   String dropdownValue;
+
   // var _isDetecting = false;
   var hasModels = false;
   List<String> listModelNames;
@@ -84,11 +85,15 @@ class _HomePageState extends State<HomePage> {
 
   checkLoginStatusAndIP() async {
     var ip = await SPref.instance.get(SPrefCache.CURRENT_IP_SERVER);
+    print(ip.toString());
     if (ip != null) {
+      print('ip not null');
       DetectClient.setServerIP(ip);
     }
     var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
     if (token == null || ip == null) {
+      if(token ==null) print('token null');
+      if(ip ==null) print('ip null');
       print("Token null or ip null");
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => SignIn()),
@@ -115,123 +120,130 @@ class _HomePageState extends State<HomePage> {
             bloc: bloc,
             child: Stack(
               children: <Widget>[
-                Container(
-                  height: 360,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(50.0),
-                          bottomRight: Radius.circular(50.0)),
-                      gradient: LinearGradient(
-                          colors: [color1, color2],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight)),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  //change here don't //worked
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (hasModels == true) _buildDropdownList(bloc),
-                    new Spacer(),
-                    Container(
-                      margin: const EdgeInsets.only(top: 30, right: 10),
-                      child: FlatButton(
-                        onPressed: () {
-                          SPref.instance.set(SPrefCache.KEY_TOKEN, null);
-                          SPref.instance.set(SPrefCache.MODEL_NAMES, null);
-                          SPref.instance.set(SPrefCache.USER_NAME, null);
-                          Navigator.pushReplacementNamed(context, '/home');
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40.0)),
-                        color: Colors.black12,
-                        child: Text("Log out",
-                            style:
-                                TextStyle(color: Colors.black, fontSize: 18.0)),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  margin: const EdgeInsets.only(top: 60),
-                  height: 600,
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(height: 20.0),
-                      Expanded(
-                        child: Stack(
-                          children: <Widget>[
-                            Container(
-                                height: double.infinity,
-                                margin: const EdgeInsets.only(
-                                    left: 30.0, right: 30.0, top: 10.0),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                    child: _decideImage(base: _base64)))
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 30.0),
-                      Container(
-                        child: Stack(
-                          children: <Widget>[
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 5.0, horizontal: 16.0),
-                              margin: const EdgeInsets.only(
-                                  top: 30,
-                                  left: 20.0,
-                                  right: 20.0,
-                                  bottom: 20.0),
-                              decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [color1, color2],
-                                  ),
-                                  borderRadius: BorderRadius.circular(30.0)),
-                              child: Row(
-                                children: <Widget>[
-                                  IconButton(
-                                    color: Colors.white,
-                                    icon: Icon(FontAwesomeIcons.link),
-                                    onPressed:() {
-                                      showDialog(
-                                          child: Dialog(
-                                            child: Column(
-                                              children: <Widget>[
-                                                _buildInputURL(context, bloc),
-                                                _buildButtonUseImage(
-                                                    context, bloc)
-                                              ],
-                                            ),
-                                          ),
-                                          context: context);
-                                    },
-                                  ),
-                                  Spacer(),
-                                  IconButton(
-                                    color: Colors.white,
-                                    icon: Icon(Icons.image),
-                                    onPressed: () {
-                                      _showChoiceDialog(context, bloc);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Center(
-                              child: _buildButtonDetectImage(context, bloc),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                _buildBackground(),
+                _buildChooseModelAndLogout(bloc, context),
+                _buildImageView(context, bloc),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Container _buildImageView(BuildContext context, HomePageBloc bloc) {
+    return Container(
+      margin: const EdgeInsets.only(top: 60),
+      height: 600,
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: 20.0),
+          Expanded(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                    height: double.infinity,
+                    margin: const EdgeInsets.only(
+                        left: 30.0, right: 30.0, top: 10.0),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30.0),
+                        child: _decideImage(base: _base64)))
+              ],
+            ),
+          ),
+          SizedBox(height: 30.0),
+          Container(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 16.0),
+                  margin: const EdgeInsets.only(
+                      top: 30, left: 20.0, right: 20.0, bottom: 20.0),
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color1, color2],
+                      ),
+                      borderRadius: BorderRadius.circular(30.0)),
+                  child: Row(
+                    children: <Widget>[
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(FontAwesomeIcons.link),
+                        onPressed: () {
+                          showDialog(
+                              child: Dialog(
+                                child: Column(
+                                  children: <Widget>[
+                                    _buildInputURL(context, bloc),
+                                    _buildButtonUseImage(context, bloc)
+                                  ],
+                                ),
+                              ),
+                              context: context);
+                        },
+                      ),
+                      Spacer(),
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(Icons.image),
+                        onPressed: () {
+                          _showChoiceDialog(context, bloc);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Center(
+                  child: _buildButtonDetectImage(context, bloc),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Row _buildChooseModelAndLogout(HomePageBloc bloc, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      //change here don't //worked
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (hasModels == true) _buildDropdownList(bloc),
+        new Spacer(),
+        Container(
+          margin: const EdgeInsets.only(top: 30, right: 10),
+          child: FlatButton(
+            onPressed: () {
+              SPref.instance.set(SPrefCache.KEY_TOKEN, null);
+              SPref.instance.set(SPrefCache.MODEL_NAMES, null);
+              SPref.instance.set(SPrefCache.USER_NAME, null);
+              Navigator.pushReplacementNamed(context, '/home');
+            },
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40.0)),
+            color: Colors.black12,
+            child: Text("Log out",
+                style: TextStyle(color: Colors.black, fontSize: 18.0)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Container _buildBackground() {
+    return Container(
+      height: 360,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(50.0),
+              bottomRight: Radius.circular(50.0)),
+          gradient: LinearGradient(
+              colors: [color1, color2],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight)),
     );
   }
 
@@ -315,7 +327,6 @@ class _HomePageState extends State<HomePage> {
     print(_imageFile.path);
     return PhotoView(
         imageProvider: Image.file(_imageFile, fit: BoxFit.cover).image);
-
   }
 
   _buildButtonDetectImage(BuildContext context, HomePageBloc bloc) {
@@ -323,14 +334,14 @@ class _HomePageState extends State<HomePage> {
       initialData: true,
       value: bloc.btnDetectStream,
       child: Consumer<bool>(
-        builder: (context, enable,child)=>FloatingActionButton(
+        builder: (context, enable, child) => FloatingActionButton(
           heroTag: 'Detection',
           child: Icon(
             Icons.remove_red_eye,
             color: Colors.pink,
           ),
           backgroundColor: Colors.white,
-          onPressed:enable
+          onPressed: enable
               ? () {
                   print('clicked');
                   if (dropdownValue == null || dropdownValue.length < 1) {
@@ -348,9 +359,9 @@ class _HomePageState extends State<HomePage> {
                     // _isDetecting = true;
                     bloc.event.add(DetectImageEvent(
                         modelName: dropdownValue, fileImage: _imageFile));
-                  } else{
-                    _buildSnackBar(context, "Select image to detect", Colors.red);
-
+                  } else {
+                    _buildSnackBar(
+                        context, "Select image to detect", Colors.red);
                   }
                 }
               : null,

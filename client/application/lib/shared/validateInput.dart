@@ -16,4 +16,5 @@ class Validation{
   static bool isValidURL(String url) {
     return validator.url(url);
   }
+
 }
