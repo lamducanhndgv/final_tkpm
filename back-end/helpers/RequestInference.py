@@ -16,7 +16,8 @@ class Framework(Enum):
 
 class RequestInference:
     TESTING = 0
-    _hosts = ["url1", "url2"]
+    DATA_FOLDER = None
+    _hosts = ["http://inferenceserver01:5000", "http://inferenceserver02:5001"]
 
     def __init__(self, userid, modelid, img):
         self._userid = userid
@@ -26,17 +27,17 @@ class RequestInference:
 
     def read_config_file(self):
         config_file_path = "config.json" if self.TESTING \
-            else os.path.join("/data/Users/", self._userid, self._modelid, "config.json")
+            else os.path.join(self.DATA_FOLDER, "users", self._userid, self._modelid, "config.json")
         with open(config_file_path, "r") as file:
             data = json.load(file)
-            framework = data[0]["framework"]
+            framework = data[0]["value"]
         self._framework = framework
 
     def __call__(self, *args, **kwargs):
         if self._framework is None:
             self.read_config_file()
         host_id = Framework.generate_framework_id(self._framework)
-        send_url = self._hosts[host_id.value]
+        send_url = "{0}/user/{1}/models/{2}".format(self._hosts[host_id.value], self._userid, self._modelid)
         if not self.TESTING:
             response = requests.get(send_url, json={"img": self._img})
             if response.status_code == 200:

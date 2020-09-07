@@ -1,5 +1,9 @@
 [
   {
+    "type": "framework",
+    "value": "darknet"
+  },
+  {
     "type": "command",
     "value": "darknet"
   },

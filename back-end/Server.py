@@ -1,19 +1,21 @@
-from flask import Flask,  render_template, url_for, request, session, redirect, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS, cross_origin
-from middlewares.token_require import token_require
-from helpers.createDir import make_dir, is_path_existing
-from helpers.getUsername import get_username
-from werkzeug.utils import secure_filename
-from PIL import Image
-from io import BytesIO
-import urllib.request
 import io
-import zipfile36 as zipfile
-import bcrypt
-import jwt
 import json
 import os
+import urllib.request
+
+import bcrypt
+import jwt
+import zipfile36 as zipfile
+from PIL import Image
+from flask import Flask, render_template, request, session, redirect, jsonify
+from flask_cors import CORS
+from flask_pymongo import PyMongo
+from werkzeug.utils import secure_filename
+
+from helpers.createDir import make_dir, is_path_existing
+from helpers.getUsername import get_username
+from helpers.RequestInference import RequestInference
+from middlewares.token_require import token_require
 
 app = Flask(__name__)
 # CORS(app)
@@ -22,6 +24,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['MONGO_DBNAME'] = 'tkpm_final'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/tkpm_final'
+app.config['DATA_FOLDER'] = "E:\\LamAnh\\ThietKePhanMem\\final_project\\data"
 
 mongo = PyMongo(app)
 
@@ -42,9 +45,9 @@ def post_index():
     modelname = req.get('modelname')
 
     parent_dir = make_dir('users/', session['username'])
-    if is_path_existing(parent_dir+'/'+modelname):
-        return jsonify(status=500, message='Models name exists!'),500
-    curr_dir = make_dir(parent_dir+'/', modelname)
+    if is_path_existing(parent_dir + '/' + modelname):
+        return jsonify(status=500, message='Models name exists!'), 500
+    curr_dir = make_dir(parent_dir + '/', modelname)
 
     f = request.files['file']
     filepath = curr_dir + '/' + secure_filename(f.filename)
@@ -52,14 +55,15 @@ def post_index():
     with zipfile.ZipFile(filepath, 'r') as zip_ref:
         zip_ref.extractall(curr_dir)
     os.remove(filepath)
-    
+
     # insert model's name of user into database
     models = mongo.db.models
     models.insert({'username': session['username'], 'modelname': modelname})
 
-    return jsonify(status=200, message='File upload successful!'),200
+    return jsonify(status=200, message='File upload successful!'), 200
 
-@app.route('/login', methods=['POST','GET'])
+
+@app.route('/login', methods=['POST', 'GET'])
 # @cross_origin()
 def login():
     if request.method == 'POST':
@@ -82,79 +86,83 @@ def login():
 
                 # if success return token and http status code 200
                 return jsonify(status=200,
-                                message='Login successfully!',
-                                listmodels=listmodels,
-                                token=encoded_jwt.decode('utf-8') ),200
+                               message='Login successfully!',
+                               listmodels=listmodels,
+                               token=encoded_jwt.decode('utf-8')), 200
 
         # http status code 401
-        return jsonify(status=401, 
-                        message='Incorrect username or password'),401
-    
+        return jsonify(status=401,
+                       message='Incorrect username or password'), 401
+
     if 'username' in session:
         return redirect('/')
 
     return render_template('login.html')
 
 
-@app.route('/register', methods=['POST','GET'])
+@app.route('/register', methods=['POST', 'GET'])
 # @cross_origin()
 def register():
     if request.method == 'POST':
         data = json.loads(request.data)
         users = mongo.db.users
-        
+
         existing_user = users.find_one({'username': data['username']})
 
         if existing_user is None:
             hashpass = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             users.insert({'username': data['username'], 'password': hashpass})
             session['username'] = data['username']
-            
+            os.chdir(app.config["DATA_FOLDER"])
             make_dir('users/', data['username'] + '/images')
 
             # http status code 200
             return jsonify(status=200,
-                            message='Register completed!'),200
-        
+                           message='Register completed!'), 200
+
         # http status code 400
         return jsonify(status=400,
-                        message='Username is already exists!'),400
-    
+                       message='Username is already exists!'), 400
+
     if 'username' in session:
         return redirect('/')
 
     return render_template('register.html')
 
+
 @app.route('/detection/url', methods=['POST'])
 @token_require
 def mainUrlDetection():
-    requestData=str(request.data,'utf-8')
+    requestData = str(request.data, 'utf-8')
     data = json.loads(requestData)
-    imgUrl= data['url']
+    imgUrl = data['url']
     modelName = data['model']
-
     username = get_username(request.headers['Authorization'])
-    img = Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
+    os.chdir(app.config["DATA_FOLDER"])
+    img = Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
+    res = RequestInference(username, modelName, f"{secure_filename(username)}.jpg")()
+    print(res)
+    return jsonify(status=200, message='Uploaded ok!'), 200
 
-    return jsonify(status=200,message='Uploaded ok!'),200
 
 @app.route('/detection/file', methods=['POST'])
-@token_require
+# @token_require
 def main2():
     img = request.files["image"].read();
     model = request.form.to_dict(flat=False)['model'][0];
-
     username = get_username(request.headers['Authorization'])
-    Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.png'.format(secure_filename(username)))
+    Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
+    return jsonify(status=200, message='Uploaded ok!'), 200
 
-    return jsonify(status=200,message='Uploaded ok!'),200
 
 @app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return jsonify(status=200,
-                    message='Logout successfully!'), 200
+                   message='Logout successfully!'), 200
+
 
 if __name__ == '__main__':
     app.secret_key = 'secret'
-    app.run(host='0.0.0.0',debug=True, port=8888)
+    RequestInference.DATA_FOLDER = app.config["DATA_FOLDER"]
+    app.run(host='0.0.0.0', debug=True, port=8888)
