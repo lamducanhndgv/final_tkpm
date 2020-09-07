@@ -6,11 +6,11 @@ class Command:
     def __init__(self, userID, modelID, inputImagePath=None):
         self._userID = userID
         self._modelID = modelID
-        self._imgPath = os.path.join("/main/Users", self._userID, "images", inputImagePath)
+        self._imgPath = os.path.join("/data/users", self._userID, "images", inputImagePath)
         self._output = None
 
     def parse_json(self):
-        file_path = os.path.join("/main/Users", self._userID, self._modelID, "config.json")
+        file_path = os.path.join("/data/users", self._userID, self._modelID, "config.json")
         with open(file_path, "r") as json_file:
             data = json.load(json_file)
         return data
@@ -19,6 +19,7 @@ class Command:
         result = ""
         data = self.parse_json()
         for obj in data:
+            objStr = ""
             flag = False if obj["type"] == "output" else True
             if obj["type"] == "command":
                 objStr = obj["value"]
@@ -33,7 +34,7 @@ class Command:
         return result
 
     def make_user_path(self):
-        user_path = os.path.join("/main/Users", self._userID, self._modelID, "source")
+        user_path = os.path.join("/data/users", self._userID, self._modelID, "source")
         return user_path
 
     def __call__(self, *args, **kwargs):

@@ -68,6 +68,7 @@ function upload(url) {
 
     data.append('file', file);
     data.append('modelname', modelname)
+    data.append('config', getParamAsJson())
     
     request.upload.addEventListener("progress", function(e){
         let loaded = e.loaded;
@@ -119,4 +120,81 @@ function reset() {
     uploadBtn.classList.remove("d-none")
     cancelBtn.classList.add("d-none")
     progress.setAttribute("style", "width: 0%;");
+}
+
+// add params
+let addParamBtn = document.getElementById("add-param-btn")
+let paramTable = document.getElementById("param-table")
+let itemList = []
+
+addParamBtn.addEventListener('click', (e)=> {
+    let cls = ["param-row", "d-flex", "justify-content-between", "pt-3"];
+    let div = document.createElement('div');
+    div.classList.add(...cls); 
+
+    div.innerHTML = `
+        <button onclick="remove(this)" class="remove-item-btn">&times;</button>
+        <div class="d-flex flex-column align-item-start">
+            <span style="font-size: 17px;">Type</span>
+            <select class="custom-select mb-4" style="height: 30px; width: 100px;font-size: 15px; font-size: 13px;">
+                <option value="" selected>Choose</option>
+                <option value="param">Param</option>
+                <option value="input">Input</option>
+                <option value="output">Output</option>
+            </select>
+        </div>
+        <div class="d-flex flex-column align-item-start">
+            <span style="font-size: 17px;">Parameter</span>
+            <input type="text" style="width: 150px;font-size: 15px;">
+        </div>
+        <div class="d-flex flex-column align-item-start">
+            <span style="font-size: 17px;">Value</span>
+            <input type="text" style="width: 100px;font-size: 15px;">
+        </div>
+    `;
+
+
+    paramTable.appendChild(div);
+    itemList.push(div)
+})
+
+function remove(elem) {
+    let div = elem.parentNode;
+    var index = itemList.indexOf(div);
+    itemList.splice(index, 1);
+    div.remove();
+}
+
+function getParamAsJson() {
+    var jsonArray = [];
+
+    jsonArray.push({
+        type: "framework",
+        value: $( "#framework option:selected" ).val()
+    })
+
+    jsonArray.push({
+        type: "command",
+        value: $( "#command option:selected" ).val()
+    })
+
+    for(var i=0; i<itemList.length; i++) {
+        let div = itemList[i];
+
+        let Type = div.getElementsByTagName("select")[0];
+        let Parameter = div.getElementsByTagName("input")[0];
+        let Value = div.getElementsByTagName("input")[1];
+
+        let type = Type.options[Type.selectedIndex].value;
+        let parameter = Parameter.value;
+        let value = Value.value;
+
+        jsonArray.push({
+            type: type,
+            parameter: parameter,
+            value: value
+        })
+    }
+
+    return JSON.stringify(jsonArray)
 }

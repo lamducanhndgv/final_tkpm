@@ -17,9 +17,36 @@
             
             <div id="upload-form" class="mt-5">
                 <input id="file-container" class="mb-4" type="file" name="file" />
-                <div class="d-flex flex-columns justify-content-between mb-5">
+                <div class="d-flex flex-columns justify-content-between mb-4">
                     <label for="model-name">Model's name</label>
                     <input id="model-name" type="text" name = "model-name" />
+                </div>
+
+                <div id="cmd-form" class="mb-3">
+                    <div class="main d-flex justify-content-between">
+                        <span>Framework</span>
+                        <select id="framework" class="custom-select mb-4" style="width: 250px;">
+                            <option value="" selected>Choose the framework</option>
+                            <option value="tensorflow">Tensorflow</option>
+                            <option value="pytorch">Pytorch</option>
+                            <option value="darknet">Darknet</option>
+                        </select>
+                    </div>
+                    <div class="main d-flex justify-content-between">
+                        <span>Command</span>
+                        <select id="command" class="custom-select mb-4" style="width: 250px;">
+                            <option value="" selected>Choose the command</option>
+                            <option value="python">Python</option>
+                            <option value="darknet">Darknet</option>
+                        </select>
+                    </div>  
+                    <div class="main d-flex justify-content-between">
+                        <span>Params</span>
+                        <button id="add-param-btn">
+                            +
+                        </button>
+                    </div>    
+                    <div id="param-table" class="ml-3 "> </div>
                 </div>
 
                 <button id="upload-btn">Upload</button>
