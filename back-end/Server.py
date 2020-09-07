@@ -45,17 +45,21 @@ def post_index():
     modelname = req.get('modelname')
     config = req.get('config')
 
-    parent_dir = make_dir('users/'+session['username'])
+    os.chdir(app.config["DATA_FOLDER"])
 
-    if is_path_existing(parent_dir+'/'+modelname):
-        return jsonify(status=500, message='Models name exists!'),500
+    parent_dir = make_dir('users/' + session['username'])
 
-    model_dir = make_dir(parent_dir+'/'+modelname)
+    if is_path_existing(parent_dir + '/' + modelname):
+        return jsonify(status=500, message='Models name exists!'), 500
 
-    with open(model_dir+'/config.json', 'w') as out_file:
-        out_file.write(config)
+    model_dir = make_dir(parent_dir + '/' + modelname)
 
-    curr_dir = make_dir(model_dir+'/source')
+    print(config)
+
+    # with open(model_dir + '/config.json', 'w') as out_file:
+    #     out_file.write(config)
+
+    curr_dir = make_dir(model_dir + '/source')
 
     f = request.files['file']
     filepath = curr_dir + '/' + secure_filename(f.filename)
@@ -96,8 +100,8 @@ def login():
                                token=encoded_jwt.decode('utf-8')), 200
 
         return jsonify(status=401,
-                        message='Incorrect username or password'),401
-    
+                       message='Incorrect username or password'), 401
+
     if 'username' in session:
         return redirect('/')
 
@@ -136,25 +140,38 @@ def register():
 @app.route('/detection/url', methods=['POST'])
 @token_require
 def mainUrlDetection():
+    # Get information from request
     requestData = str(request.data, 'utf-8')
     data = json.loads(requestData)
-    imgUrl = data['url']
-    modelName = data['model']
+    img_url = data['url']
+    model_name = data['model']
     username = get_username(request.headers['Authorization'])
+
+    # Save data to storage
     os.chdir(app.config["DATA_FOLDER"])
-    img = Image.open(urllib.request.urlopen(imgUrl)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
-    res = RequestInference(username, modelName, f"{secure_filename(username)}.jpg")()
+    img = Image.open(urllib.request.urlopen(img_url)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
+
+    res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
     print(res)
+
     return jsonify(status=200, message='Uploaded ok!'), 200
 
 
 @app.route('/detection/file', methods=['POST'])
 # @token_require
 def main2():
+    # Get information from request
     img = request.files["image"].read();
-    model = request.form.to_dict(flat=False)['model'][0];
+    model_name = request.form.to_dict(flat=False)['model'][0];
     username = get_username(request.headers['Authorization'])
+
+    # Save data to storage
+    os.chdir(app.config["DATA_FOLDER"])
     Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
+
+    res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
+    print(res)
+
     return jsonify(status=200, message='Uploaded ok!'), 200
 
 

@@ -33,7 +33,7 @@ class RequestInference:
             framework = data[0]["value"]
         self._framework = framework
 
-    def __call__(self, *args, **kwargs):
+    def send_request(self):
         if self._framework is None:
             self.read_config_file()
         host_id = Framework.generate_framework_id(self._framework)
@@ -43,6 +43,11 @@ class RequestInference:
             if response.status_code == 200:
                 return response.json()
         return False if not self.TESTING else send_url
+
+    def __call__(self, *args, **kwargs):
+        response_inference = self.send_request()
+        img_path_result = response_inference["imgResult"].split("/", maxsplit=2)[-1]
+        return os.path.join(self.DATA_FOLDER, img_path_result).replace("\\", "/")
 
 
 # Testing
