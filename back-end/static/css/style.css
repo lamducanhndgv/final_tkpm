@@ -61,6 +61,8 @@
 
 #model-name {
     border-bottom: 1px solid #54747c;
+    width: 250px;
+    padding-left: 15px;
 }
 
 #model-name:focus {
@@ -84,4 +86,39 @@
 
 i {
     color: #54747c !important;
+}
+
+#add-param-btn {
+    font-size: 25px;
+    border: 2px solid #54747c;
+    color: #54747c;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    transition: 0.3s;
+}
+
+#add-param-btn:hover {
+    color: white;
+    background: #54747c;
+}
+
+.param-row input[type="text"] {
+    border-bottom: 1px solid #54747c;
+    height: 30px;
+    padding: 10px
+}
+
+.param-row input[type="text"]:focus {
+    border-bottom: 1px solid #54747c !important;
+    height: 30px;
+}
+
+.remove-item-btn {
+    font-size: 50px;
+    color: rgb(190, 78, 78);
+}
+
+.remove-item-btn:hover {
+    font-weight: bold;
 }
