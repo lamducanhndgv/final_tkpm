@@ -22,11 +22,14 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-TESTING = int(os.environ["APP_TESTING"])
+# TESTING = int(os.environ["APP_TESTING"])
 
 app.config['MONGO_DBNAME'] = 'tkpm_final'
-app.config['MONGO_URI'] = 'mongodb://{}:27017/tkpm_final'.format("localhost" if TESTING else "mongod")
-app.config['DATA_FOLDER'] = "E:\\LamAnh\\ThietKePhanMem\\final_project\\data" if TESTING else "/data"
+# app.config['MONGO_URI'] = 'mongodb://{}:27017/tkpm_final'.format("localhost" if TESTING else "mongod")
+app.config['MONGO_URI'] = 'mongodb://{}:27017/tkpm_final'.format("localhost")
+# app.config['DATA_FOLDER'] = "E:\\LamAnh\\ThietKePhanMem\\final_project\\data" if TESTING else "/data"
+# app.config['DATA_FOLDER'] = "D:\\final_tkpm\\data" if TESTING else "/data"
+app.config['DATA_FOLDER'] = "D:\\final_tkpm\\data"
 
 mongo = PyMongo(app)
 
@@ -81,6 +84,46 @@ def post_index():
 
     return jsonify(status=200, message='File upload successful!'), 200
 
+@app.route('/subscribe', methods=['GET', 'POST'])
+# @cross_origin()
+# @token_require
+def subscribe():
+    # get to this route
+    if request.method == 'GET':
+        if 'username' in session:
+            user_model = mongo.db.users
+
+            users = user_model.find({
+                    '$and': [
+                        { 'username': { '$ne': session['username'] } },
+                        {'others': { '$ne': session['username'] }}
+                    ]
+                }, 
+                {
+                    '_id': 0, 
+                    'username': 1
+                }
+            )
+
+            return render_template('subscribe.html', name=session['username'], users=users)
+
+        return redirect('/login')
+    
+    # post to this route
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        users = mongo.db.users
+
+        current_user = data['current_user']
+        subscribe_user = data['subscribe_user']
+
+        users.update_one(
+            {'username': subscribe_user },
+            {'$addToSet': {'others': current_user}}
+        )
+
+        return jsonify(status=200, message='Subscribe successfully!'), 200
+
 
 @app.route('/login', methods=['POST', 'GET'])
 # @cross_origin()
@@ -90,12 +133,22 @@ def login():
         users = mongo.db.users
         models = mongo.db.models
 
+        device_token = data['device_token'] if 'device_token' in data else ''
+        
         login_user = users.find_one({'username': data['username']})
 
         if login_user:
             if bcrypt.checkpw(data['password'].encode('utf-8'), login_user['password']):
                 session['username'] = data['username']
                 encoded_jwt = jwt.encode({'username': data['username']}, 'secret', algorithm='HS256')
+
+                users.update(
+                    {'username': data['username']},
+                    {'$set': {
+                        'device_token': device_token
+                        }
+                    }
+                ) 
 
                 listmodels = []
                 for models in models.find({'username': data['username']}):
@@ -126,7 +179,7 @@ def register():
 
         if existing_user is None:
             hashpass = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
-            users.insert({'username': data['username'], 'password': hashpass})
+            users.insert({'username': data['username'], 'password': hashpass, 'device_token': '' ,'others': []})
             session['username'] = data['username']
             os.chdir(app.config["DATA_FOLDER"])
             make_dir('users/' + data['username'] + '/images')

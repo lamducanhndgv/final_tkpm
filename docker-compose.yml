@@ -7,22 +7,26 @@ services:
     restart: "always"
     environment:
       APP_TESTING: 0
+      PORT_SERVER_1: 5555
+      PORT_SERVER_2: 6666
     networks:
       - tkpm-network
     ports:
-      - "8888:8888"
+      - "0.0.0.0:8888:8888"
     volumes:
-      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
+      - D:/final_tkpm/data:/data
 
   tensorflow-pytorch-opencv-server:
     image: "lamducanhndgv/tkpm:tensorflow_pytorch_opencv"
     container_name: "inferenceserver01"
     restart: "always"
+    environment:
+      APP_PORT: 5555
     networks:
       - tkpm-network
     volumes:
-      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
-      - E:/LamAnh/ThietKePhanMem/final_project/inference-server:/main
+      - D:/final_tkpm/data:/data
+      - D:/final_tkpm/inference-server:/main
     command: python /main/main.py
 
 
@@ -30,11 +34,13 @@ services:
     image: "lamducanhndgv/tkpm:darknet"
     container_name: "inferenceserver02"
     restart: "always"
+    environment:
+      APP_PORT: 6666
     networks:
       - tkpm-network
     volumes:
-      - E:/LamAnh/ThietKePhanMem/final_project/data:/data
-      - E:/LamAnh/ThietKePhanMem/final_project/inference-server:/main
+      - D:/final_tkpm/data:/data
+      - D:/final_tkpm/inference-server:/main
     command: python /main/main.py
 
   mongod:
@@ -51,4 +57,6 @@ services:
 networks:                             # Create network
   tkpm-network:
     driver: bridge
+  hostnet:
+    external: true
 
