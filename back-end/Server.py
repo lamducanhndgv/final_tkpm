@@ -16,6 +16,7 @@ from helpers.createDir import make_dir, is_path_existing
 from helpers.getUsername import get_username
 from helpers.RequestInference import RequestInference
 from middlewares.token_require import token_require
+from services.push_notify import push_notify
 
 app = Flask(__name__)
 # CORS(app)
@@ -78,9 +79,46 @@ def post_index():
         zip_ref.extractall(curr_dir)
     os.remove(filepath)
 
-    # insert model's name of user into database
+    # insert_one model's name of user into database
     models = mongo.db.models
-    models.insert({'username': session['username'], 'modelname': model_name})
+    users = mongo.db.users
+
+    print('zo')
+    models.insert_one({'username': session['username'], 'modelname': model_name})
+    print('zo')
+    # get user device tokens to push notify
+    device_tokens_cursor = users.aggregate([
+        {
+            '$match': {
+                'username': session['username']
+            }
+        },
+        {
+            '$unwind': '$others'
+        },
+        {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'others',
+                'foreignField': 'username',
+                'as': 'info'
+            }
+        },
+        {
+            '$unwind': '$info'
+        },
+        {
+            '$project': {
+                '_id': 0,
+                'token': '$info.device_token'
+            }
+        }
+    ])
+
+
+    device_tokens = list(device_tokens_cursor)
+
+    push_notify(session['username'], device_tokens)
 
     return jsonify(status=200, message='File upload successful!'), 200
 
@@ -149,6 +187,15 @@ def login():
                         }
                     }
                 ) 
+                # user_data = users.find_one({'username': data['username']}, {'token': 1})
+                # if(user_data['token'] != ''):
+                #     users.update(
+                #         {'username': data['username']},
+                #         {'$set': {
+                #             'device_token': device_token
+                #             }
+                #         }
+                #     ) 
 
                 listmodels = []
                 for models in models.find({'username': data['username']}):
@@ -179,7 +226,7 @@ def register():
 
         if existing_user is None:
             hashpass = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
-            users.insert({'username': data['username'], 'password': hashpass, 'device_token': '' ,'others': []})
+            users.insert_one({'username': data['username'], 'password': hashpass, 'device_token': '' ,'others': []})
             session['username'] = data['username']
             os.chdir(app.config["DATA_FOLDER"])
             make_dir('users/' + data['username'] + '/images')
