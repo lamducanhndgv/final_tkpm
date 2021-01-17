@@ -7,7 +7,7 @@ import bcrypt
 import jwt
 import zipfile36 as zipfile
 from PIL import Image
-from flask import Flask, render_template, request, session, redirect, jsonify, Response
+from flask import Flask, render_template, request, session, redirect, jsonify, Response, make_response
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from werkzeug.utils import secure_filename
@@ -83,9 +83,9 @@ def post_index():
     models = mongo.db.models
     users = mongo.db.users
 
-    print('zo')
+
     models.insert_one({'username': session['username'], 'modelname': model_name})
-    print('zo')
+
     # get user device tokens to push notify
     device_tokens_cursor = users.aggregate([
         {
@@ -121,6 +121,52 @@ def post_index():
     push_notify(session['username'], device_tokens)
 
     return jsonify(status=200, message='File upload successful!'), 200
+
+
+@app.route('/update', methods=['GET', 'POST', 'PUT'])
+# @cross_origin()
+# @token_require
+def update():
+    if 'username' not in session:
+        return redirect('/login')
+
+    if request.method == 'GET':
+        print('zo get')
+        models = mongo.db.models
+
+        own_model = models.find({'username': session['username']}, {'_id': 0, 'modelname': 1});
+        
+        return render_template('update.html', name=session['username'], models=own_model)
+    
+    if request.method == 'POST':
+        print('zo post')
+        data = json.loads(request.data)
+        username = data['username']
+        modelname = data['model']
+
+        os.chdir(app.config["DATA_FOLDER"])
+        parent_dir = make_dir('users/' + session['username'])
+        
+        if not is_path_existing(parent_dir + '/' + modelname):
+            return jsonify(status=500, message='Models does not exist!'), 500
+
+        model_dir = make_dir(parent_dir + '/' + modelname)
+
+        with open(model_dir+'/config.json', 'r') as json_file:
+            data = json.load(json_file)
+            data.append({'modelname': modelname})
+            print(data)
+            return jsonify(status=200, data=data)
+
+
+    if request.method == 'PUT':
+        models = mongo.db.models
+
+        own_model = models.find({'username': session['username']}, {'_id': 0, 'modelname': 1});
+        
+        return render_template('update.html', name=session['username'], models=own_model)
+
+
 
 @app.route('/subscribe', methods=['GET', 'POST'])
 # @cross_origin()
