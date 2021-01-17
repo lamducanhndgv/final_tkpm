@@ -49,6 +49,20 @@
 
 }
 
+/*  */
+#update-form {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #54747c;
+    padding: 30px;
+    font-size: 20px;
+}
+
+#update-btn {
+    background-color: #54747c;
+}
+/*  */
+
 #upload-btn {
     background-color: #54747c;
 }

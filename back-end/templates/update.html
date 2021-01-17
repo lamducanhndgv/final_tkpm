@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}AI model bot{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="limiter">
+		<div id="background">
+            <div class="header mb-5 mt-5">
+                <div class="username">
+                    <h1>{{name}}</h1>
+                </div>
+                <a href="/">HOME</a>
+                <button id="logout-btn" class='logout-btn'>Logout</button>
+                <a href="/subscribe">SUBSCRIBE</a>
+            </div>
+
+            <div class="d-flex flex-row">
+                <select id="model-selection">
+                    <option disabled selected value>Select model</option>
+                    {% for model in models %}
+                        <option value = {{model.modelname}}>{{model.modelname}}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="button" class="btn ml-2 btn-warning" id="choose-model-btn">Choose Model</button>
+            </div>
+
+            <div id="update-form" class="mt-5" style="visibility: hidden;">
+
+            </div>
+		</div>
+	</div>
+{% endblock %}
