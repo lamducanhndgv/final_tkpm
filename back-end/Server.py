@@ -420,6 +420,16 @@ def main2():
 @app.route('/logout', methods=['POST'])
 def logout():
     users = mongo.db.users
+    username = ""
+
+    try:
+        username = session['username']
+    except:
+        data = json.loads(request.data)
+        username = data['username']
+    # except:
+    #     username = get_username(request.headers['Authorization'])
+
     users.update_one(
         {'username': session['username']},
         {'$set': {
