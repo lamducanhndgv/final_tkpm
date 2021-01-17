@@ -276,7 +276,13 @@ def subscribe():
 
         records = []
         for model in subscribe_models:
-            records.append({'username': current_user, 'modelname': '{}/{}'.format(subscribe_user, model['modelname'])})
+            tokens = model['modelname'].split('/')
+            modelnamechild=''
+            if(len(tokens) == 1):
+                modelnamechild = '{}/{}'.format(subscribe_user, model['modelname'])
+            else: 
+                modelnamechild = model['modelname']
+            records.append({'username': current_user, 'modelname': modelnamechild})
         
         if(len(records) > 0):
             models.insert_many(records)
