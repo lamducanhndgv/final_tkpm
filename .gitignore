@@ -4,3 +4,5 @@ source/
 */__pycache__
 .gitignore
 back-end/users/
+
+*.pyc
