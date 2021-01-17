@@ -11,14 +11,20 @@ headers = {
 }
 
 
-def push_notify(sender, receivers, title, message):
+def push_notify(db, sender, receivers, title, message):
+    # save noti to db
+    user = db.users.find_one({'username': sender}, {'_id': 0, 'others': 1})
+    for other in user['others']:
+        db.notifications.insert_one({'username': other, 'title': title, 'message': message})
+
+    # push firebase noti
     tokens = [receiver['token']
               for receiver in receivers if receiver['token'] != '']
 
     body = {
         'notification': {'title': title,
                          'body': message
-                        },
+                         },
         'registration_ids': tokens
     }
 
