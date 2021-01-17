@@ -2,6 +2,8 @@ let modelSelector = document.getElementById('model-selection');
 let chooseBtn = document.getElementById('choose-model-btn');
 let form = document.getElementById('update-form')
 
+let updateItemsList = []
+
 chooseBtn.addEventListener('click', (e) => {
     let choosenModel = modelSelector.value;
     if(choosenModel==='') {
@@ -25,6 +27,45 @@ let choose = (choosenModel) => {
         let resdata = xhttp.response.data
         form.style.visibility = 'visible';
         form.innerHTML = getTemplate(resdata)
+
+        let paramTable = form.querySelector('#update-param-table');
+        let addBtn = form.querySelector('#add-updateparam-btn');
+        let updateBtn = form.querySelector('#update-btn')
+
+        addBtn.addEventListener('click', (e) => {
+            let cls = ["param-row", "d-flex", "justify-content-between", "pt-3"];
+            let div = document.createElement('div');
+            div.classList.add(...cls); 
+
+            div.innerHTML = `
+                <button onclick="removeUpdateInput(this)" class="remove-item-btn">&times;</button>
+                <div class="d-flex flex-column align-item-start">
+                    <span style="font-size: 17px;">Type</span>
+                    <select class="custom-select mb-4" style="height: 30px; width: 100px;font-size: 15px; font-size: 13px;">
+                        <option value="" selected>Choose</option>
+                        <option value="param">Param</option>
+                        <option value="input">Input</option>
+                        <option value="output">Output</option>
+                    </select>
+                </div>
+                <div class="d-flex flex-column align-item-start">
+                    <span style="font-size: 17px;">Parameter</span>
+                    <input type="text" style="width: 150px;font-size: 15px;">
+                </div>
+                <div class="d-flex flex-column align-item-start">
+                    <span style="font-size: 17px;">Value</span>
+                    <input type="text" style="width: 100px;font-size: 15px;">
+                </div>
+            `;
+
+
+            paramTable.appendChild(div);
+            updateItemsList.push(div)
+        })
+
+        updateBtn.addEventListener('click', (e) => {
+            updateModel(form);
+        })
     };
     xhttp.open("POST", updateURL, true);
     xhttp.send(data);
@@ -57,17 +98,17 @@ let getTemplate = (data) => {
         </div>  
         <div class="main d-flex justify-content-between">
             <span>Params</span>
-            <button id="add-param-btn">
+            <button id="add-updateparam-btn">
                 +
             </button>
         </div>    
-        <div id="param-table" class="ml-3 ">
+        <div id="update-param-table" class="ml-3 ">
             ${getParamTable(inputs)}
         </div>
     </div>
 
-    <button id="upload-btn">Upload</button>
-    <button class="btn btn-warning d-none" type="button" id="cancel-btn">Cancel upload</button>
+    <button id="update-btn">Update</button>
+    <button class="btn btn-warning d-none" type="button" id="cancel-btn">Cancel update</button>
 
     <div id="progress_wrapper" class="d-none">
         <label id="progress_status"></label>
@@ -125,8 +166,6 @@ let getCommandInput = (command) => {
     }
 }
 
-let updateItemsList = []
-
 let getInputHTML = (type) => {
     switch (type) {
         case "param":
@@ -144,6 +183,12 @@ let getInputHTML = (type) => {
                     <option value="input">Input</option>
                     <option value="output" selected>Output</option>
                     `
+        default:
+            return `<option value="" selected>Choose</option>
+                    <option value="param">Param</option>
+                    <option value="input">Input</option>
+                    <option value="output">Output</option>
+                    `
     }
 }
 
@@ -158,7 +203,7 @@ let getParamTable = (inputs) => {
         div.classList.add(...cls); 
 
         div.innerHTML = `
-            <button onclick="remove(this)" class="remove-item-btn">&times;</button>
+            <button onclick="removeUpdateInput(this)" class="remove-item-btn">&times;</button>
             <div class="d-flex flex-column align-item-start">
                 <span style="font-size: 17px;">Type</span>
                 <select class="custom-select mb-4" style="height: 30px; width: 100px;font-size: 15px; font-size: 13px;">
@@ -182,9 +227,107 @@ let getParamTable = (inputs) => {
     return parentDiv.innerHTML;
 }
 
-function removeUpdateInput(elem) {
+let removeUpdateInput = (elem) => {
     let div = elem.parentNode;
-    var index = itemList.indexOf(div);
+    var index = updateItemsList.indexOf(div);
     updateItemsList.splice(index, 1);
     div.remove();
+}
+
+let updateModel = (form) => {
+    let data = new FormData();
+    let request = new XMLHttpRequest();
+    let alert_wrapper = form.querySelector('#alert_wrapper')
+    let updateBtn = form.querySelector('#update-btn')
+    let progress_wrapper = form.querySelector('#progress_wrapper')
+    let model_name = form.querySelector('#model-name')
+
+    request.responseType = 'json';
+    alert_wrapper.innerHTML = "";
+
+    updateBtn.classList.add("d-none");
+    progress_wrapper.classList.remove("d-none");
+
+    let modelname = model_name.value;
+
+    data.append('modelname', modelname)
+    data.append('config', getUpdateParamAsJson())
+
+    request.addEventListener("load", function(e) {
+        if(request.status == 200) {
+            update_show_alert(alert_wrapper, `${request.response.message}`, "success");
+        }
+        else if (request.status == 500){
+            update_show_alert(alert_wrapper, `${request.response.message}`, "warning")
+        }
+        else if (request.status == 401){
+            update_show_alert(alert_wrapper, `${request.response.message}`, "danger")
+        }
+        else {
+            update_show_alert(alert_wrapper, "Error uploading file", "danger");
+        }
+
+        updateReset(form);
+    })
+
+
+    request.open('POST', updatemodelURL)
+    request.setRequestHeader('Authorization', getCookie('token'));  
+    request.send(data)
+}
+
+let getUpdateParamAsJson = () => {
+    var jsonArray = [];
+
+    jsonArray.push({
+        type: "framework",
+        value: $( "#framework option:selected" ).val()
+    })
+
+    jsonArray.push({
+        type: "command",
+        value: $( "#command option:selected" ).val()
+    })
+
+    for(var i=0; i<updateItemsList.length; i++) {
+        let div = updateItemsList[i];
+
+        let Type = div.getElementsByTagName("select")[0];
+        let Parameter = div.getElementsByTagName("input")[0];
+        let Value = div.getElementsByTagName("input")[1];
+
+        let type = Type.options[Type.selectedIndex].value;
+        let parameter = Parameter.value;
+        let value = Value.value;
+
+        jsonArray.push({
+            type: type,
+            parameter: parameter,
+            value: value
+        })
+    }
+
+    return JSON.stringify(jsonArray)
+}
+
+function updateReset(form) {
+    let updateBtn = form.querySelector('#update-btn')
+    let progress_wrapper = form.querySelector('#progress_wrapper')
+    let progress = form.querySelector('#progress')
+
+
+    progress_wrapper.classList.add("d-none")
+    updateBtn.classList.remove("d-none")
+    progress.setAttribute("style", "width: 0%;");
+}
+
+function update_show_alert(alert_wrapper, message, alert) {
+    alert_wrapper.innerHTML = `
+        <div class="alert alert-${alert} alert-dismissible fade show" role="alert">
+            <span>${message}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
 }

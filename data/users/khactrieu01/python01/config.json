@@ -1,1 +1,1 @@
-[{"type":"framework","value":"pytorch"},{"type":"command","value":"python"},{"type":"input","parameter":"","value":"1"}]
+[{"type":"framework","value":"tensorflow"},{"type":"command","value":"darknet"},{"type":"input","parameter":"","value":"1"},{"type":"input","parameter":"4657","value":"343"},{"type":"input","parameter":"12","value":"34"},{"type":"","parameter":"322","value":"23"}]

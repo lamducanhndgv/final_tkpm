@@ -118,7 +118,10 @@ def post_index():
 
     device_tokens = list(device_tokens_cursor)
 
-    push_notify(session['username'], device_tokens)
+    title = 'Upload'
+    message = 'User {} has just uploaded {} model. Check it!'.format(session['username'], model_name)
+    
+    push_notify(session['username'], device_tokens, title, message)
 
     return jsonify(status=200, message='File upload successful!'), 200
 
@@ -131,7 +134,6 @@ def update():
         return redirect('/login')
 
     if request.method == 'GET':
-        print('zo get')
         models = mongo.db.models
 
         own_model = models.find({'username': session['username']}, {'_id': 0, 'modelname': 1});
@@ -139,7 +141,6 @@ def update():
         return render_template('update.html', name=session['username'], models=own_model)
     
     if request.method == 'POST':
-        print('zo post')
         data = json.loads(request.data)
         username = data['username']
         modelname = data['model']
@@ -155,17 +156,72 @@ def update():
         with open(model_dir+'/config.json', 'r') as json_file:
             data = json.load(json_file)
             data.append({'modelname': modelname})
-            print(data)
             return jsonify(status=200, data=data)
 
+@app.route('/updatemodel', methods=['POST'])
+# @cross_origin()
+# @token_require
+def updatemodel():
+    if 'username' not in session:
+        return redirect('/login')
 
-    if request.method == 'PUT':
-        models = mongo.db.models
+    users = mongo.db.users
 
-        own_model = models.find({'username': session['username']}, {'_id': 0, 'modelname': 1});
-        
-        return render_template('update.html', name=session['username'], models=own_model)
+    req = request.form
+    config = req.get('config')
+    model_name = req.get('modelname')
 
+    os.chdir(app.config["DATA_FOLDER"])
+
+    parent_dir = make_dir('users/' + session['username'])
+
+    if not is_path_existing(parent_dir + '/' + model_name):
+        return jsonify(status=500, message='Model does not exist!'), 500
+
+    model_dir = make_dir(parent_dir + '/' + model_name)
+
+    with open(model_dir + '/config.json', 'w') as out_file:
+        out_file.write(config)
+
+    # notify
+     # get user device tokens to push notify
+    device_tokens_cursor = users.aggregate([
+        {
+            '$match': {
+                'username': session['username']
+            }
+        },
+        {
+            '$unwind': '$others'
+        },
+        {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'others',
+                'foreignField': 'username',
+                'as': 'info'
+            }
+        },
+        {
+            '$unwind': '$info'
+        },
+        {
+            '$project': {
+                '_id': 0,
+                'token': '$info.device_token'
+            }
+        }
+    ])
+
+
+    device_tokens = list(device_tokens_cursor)
+    
+    title = 'Update'
+    message = 'User {} has just updated {} model. Check it!'.format(session['username'], model_name)
+    
+    push_notify(session['username'], device_tokens, title, message)
+
+    return jsonify(status=200, message='Update model successfully!'), 200
 
 
 @app.route('/subscribe', methods=['GET', 'POST'])

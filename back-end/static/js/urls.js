@@ -5,5 +5,6 @@ let logURL = host + '/login';
 let regURL = host + '/register';
 let subscribeURL = host + '/subscribe';
 let updateURL = host + '/update';
+let updatemodelURL = host + '/updatemodel';
 let hostURL = host;
 let logoutURL = host + '/logout';

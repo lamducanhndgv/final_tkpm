@@ -11,15 +11,14 @@ headers = {
 }
 
 
-def push_notify(sender, receivers):
+def push_notify(sender, receivers, title, message):
     tokens = [receiver['token']
               for receiver in receivers if receiver['token'] != '']
-    print(tokens)
 
     body = {
-        'notification': {'title': 'New modellllllll',
-                         'body': 'User {} has upload new model. Let check it out!'.format(sender)
-                         },
+        'notification': {'title': title,
+                         'body': message
+                        },
         'registration_ids': tokens
     }
 
