@@ -310,7 +310,7 @@ def login():
                 return jsonify(status=200,
                                message='Login successfully!',
                                listmodels=listmodels,
-                               notilist=list(notilist),
+                               notify_logs=list(notilist),
                                token=encoded_jwt.decode('utf-8')), 200
 
         return jsonify(status=401,
