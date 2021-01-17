@@ -16,7 +16,7 @@ from helpers.createDir import make_dir, is_path_existing
 from helpers.getUsername import get_username
 from helpers.RequestInference import RequestInference
 from middlewares.token_require import token_require
-from services.push_notify import push_notify
+from services.push_notify import push_notify, push_notify_subscribe
 
 app = Flask(__name__)
 # CORS(app)
@@ -261,6 +261,14 @@ def subscribe():
             {'username': subscribe_user },
             {'$addToSet': {'others': current_user}}
         )
+
+        title = 'New subscriber'
+        message = 'User {} has just subscribed you!'.format(current_user)
+
+        subscribe_user_account = users.find_one({'username': subscribe_user}, {'_id': 0, 'device_token': 1})
+        subscribe_user_token = subscribe_user_account['device_token']
+        
+        push_notify_subscribe(mongo.db, subscribe_user, title, message)
 
         return jsonify(status=200, message='Subscribe successfully!'), 200
 

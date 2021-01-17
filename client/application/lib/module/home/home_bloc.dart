@@ -12,6 +12,7 @@ import 'package:application/event/homepage_change_image_url_event.dart';
 import 'package:application/event/homepage_detect_image_complete.dart';
 import 'package:application/event/homepage_detect_image_error.dart';
 import 'package:application/event/homepage_detect_image_event.dart';
+import 'package:application/event/homepage_logout.dart';
 import 'package:application/shared/validateInput.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
@@ -84,6 +85,9 @@ class HomePageBloc extends BaseBloc {
       case DetectImageEvent:
         handleDetectImage(event);
         break;
+      case LogoutEvent:
+        handleLogout(event);
+        break;
     }
   }
 
@@ -136,7 +140,7 @@ class HomePageBloc extends BaseBloc {
       });
     } else if (e.fileImage != null) {
       _detectRepos.detectByImage(e.fileImage, e.modelName).then((result) {
-        print(result.length);
+        // print(result.length);
         loadingSink.add(false);
         btnDetectSink.add(true);
         processSink.add(DetectImageComplete(bytesImage: result));
@@ -146,6 +150,15 @@ class HomePageBloc extends BaseBloc {
         btnDetectSink.add(true);
         print('Detect image, loading sink FALSE2');
         processSink.add(DetectImageError(message: error.toString()));
+      });
+    }
+  }
+
+  void handleLogout(BaseEvent event) async {
+    LogoutEvent e = event as LogoutEvent;
+    if(e.username!=null){
+      _detectRepos.signOut(e.username).catchError((e){
+        print('Logout Error: '+ e.toString());
       });
     }
   }

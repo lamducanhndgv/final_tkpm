@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 
 class DetectClient {
   static const PORT = '8888';
-  static var urlServer = 'http://192d8f4e5f97.ngrok.io';
+  // static var urlServer = 'http://192d8f4e5f97.ngrok.io';
+  static var urlServer = 'http://192.168.1.4:${PORT}';
   static BaseOptions _options = new BaseOptions(
     baseUrl: urlServer,
     connectTimeout: 20000,
@@ -28,9 +29,12 @@ class DetectClient {
   static final DetectClient instance = DetectClient._internal();
 
   static setServerIP(String newIP) {
-    // urlServer = 'http://' + newIP + ':$PORT';
-    _options.baseUrl = urlServer;
-    SPref.instance.set(SPrefCache.CURRENT_IP_SERVER, newIP);
+    if(!(newIP.contains("http")))
+      urlServer = 'http://' + newIP ;
+    if(!newIP.contains(PORT))
+      urlServer+= ':$PORT';
+    // _options.baseUrl = urlServer;
+    SPref.instance.set(SPrefCache.CURRENT_IP_SERVER, urlServer);
   }
 
   Dio get dio => _dio;

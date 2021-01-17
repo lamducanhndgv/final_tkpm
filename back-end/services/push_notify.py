@@ -15,7 +15,8 @@ def push_notify(db, sender, receivers, title, message):
     # save noti to db
     user = db.users.find_one({'username': sender}, {'_id': 0, 'others': 1})
     for other in user['others']:
-        db.notifications.insert_one({'username': other, 'title': title, 'message': message})
+        db.notifications.insert_one(
+            {'username': other, 'title': title, 'message': message})
 
     # push firebase noti
     tokens = [receiver['token']
@@ -30,3 +31,29 @@ def push_notify(db, sender, receivers, title, message):
 
     response = requests.post(
         "https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
+
+
+def push_notify_subscribe(db, subscribe_user, title, message):
+    # save noti to db
+    db.notifications.insert_one(
+        {'username': subscribe_user, 'title': title, 'message': message})
+
+    user_token = db.users.find_one({'username': subscribe_user}, {
+                                   '_id': 0, 'device_token': 1})
+    subscribe_user_token = user_token['device_token']
+
+    body = {
+        'notification': {'title': title,
+                         'body': message
+                         },
+        'to':
+        subscribe_user_token,
+        'priority': 'high',
+    }
+
+    response = requests.post(
+        "https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
+
+    print(response.status_code)
+
+    print(response.json())
