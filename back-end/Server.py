@@ -263,7 +263,7 @@ def subscribe():
         )
 
         title = 'New subscriber'
-        message = 'User {} has just subscribe you!'.format(current_user)
+        message = 'User {} has just subscribed you!'.format(current_user)
 
         subscribe_user_account = users.find_one({'username': subscribe_user}, {'_id': 0, 'device_token': 1})
         subscribe_user_token = subscribe_user_account['device_token']
