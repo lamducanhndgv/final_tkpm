@@ -16,7 +16,7 @@ def push_notify(db, sender, receivers, title, message):
     user = db.users.find_one({'username': sender}, {'_id': 0, 'others': 1})
     for other in user['others']:
         db.notifications.insert_one(
-            {'username': other, 'title': title, 'message': message})
+            {'username': other, 'title': title, 'body': message})
 
     # push firebase noti
     tokens = [receiver['token']
@@ -36,7 +36,7 @@ def push_notify(db, sender, receivers, title, message):
 def push_notify_subscribe(db, subscribe_user, title, message):
     # save noti to db
     db.notifications.insert_one(
-        {'username': subscribe_user, 'title': title, 'message': message})
+        {'username': subscribe_user, 'title': title, 'body': message})
 
     user_token = db.users.find_one({'username': subscribe_user}, {
                                    '_id': 0, 'device_token': 1})

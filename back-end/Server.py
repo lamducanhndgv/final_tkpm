@@ -323,7 +323,7 @@ def login():
                 for models in models.find({'username': data['username']}):
                     listmodels.append(models['modelname'])
                 
-                notilist = notifications.find({'username': data['username']}, {'_id': 0, 'title': 1, 'message': 1})
+                notilist = notifications.find({'username': data['username']}, {'_id': 0, 'title': 1, 'body': 1})
 
 
                 return jsonify(status=200,
