@@ -5,6 +5,9 @@ source/
 .gitignore
 back-end/users/
 
+<<<<<<< HEAD
+=======
 back-end/services/__pycache__/
 
+>>>>>>> master
 *.pyc
