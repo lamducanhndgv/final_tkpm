@@ -121,7 +121,7 @@ def post_index():
     title = 'Upload'
     message = 'User {} has just uploaded {} model. Check it!'.format(session['username'], model_name)
     
-    push_notify(session['username'], device_tokens, title, message)
+    push_notify(mongo.db, session['username'], device_tokens, title, message)
 
     return jsonify(status=200, message='File upload successful!'), 200
 
@@ -219,7 +219,7 @@ def updatemodel():
     title = 'Update'
     message = 'User {} has just updated {} model. Check it!'.format(session['username'], model_name)
     
-    push_notify(session['username'], device_tokens, title, message)
+    push_notify(mongo.db, session['username'], device_tokens, title, message)
 
     return jsonify(status=200, message='Update model successfully!'), 200
 
@@ -272,6 +272,7 @@ def login():
         data = json.loads(request.data)
         users = mongo.db.users
         models = mongo.db.models
+        notifications = mongo.db.notifications
 
         device_token = data['device_token'] if 'device_token' in data else ''
         
@@ -282,7 +283,7 @@ def login():
                 session['username'] = data['username']
                 encoded_jwt = jwt.encode({'username': data['username']}, 'secret', algorithm='HS256')
 
-                users.update(
+                users.update_one(
                     {'username': data['username']},
                     {'$set': {
                         'device_token': device_token
@@ -302,10 +303,14 @@ def login():
                 listmodels = []
                 for models in models.find({'username': data['username']}):
                     listmodels.append(models['modelname'])
+                
+                notilist = notifications.find({'username': data['username']}, {'_id': 0, 'title': 1, 'message': 1})
+
 
                 return jsonify(status=200,
                                message='Login successfully!',
                                listmodels=listmodels,
+                               notify_logs=list(notilist),
                                token=encoded_jwt.decode('utf-8')), 200
 
         return jsonify(status=401,
@@ -384,6 +389,15 @@ def main2():
 
 @app.route('/logout', methods=['POST'])
 def logout():
+    users = mongo.db.users
+    users.update_one(
+        {'username': session['username']},
+        {'$set': {
+            'device_token': ''
+            }
+        }
+    ) 
+
     session.clear()
     return jsonify(status=200,
                    message='Logout successfully!'), 200

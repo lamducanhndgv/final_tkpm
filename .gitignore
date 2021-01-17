@@ -4,3 +4,7 @@ source/
 */__pycache__
 .gitignore
 back-end/users/
+
+back-end/services/__pycache__/
+
+*.pyc

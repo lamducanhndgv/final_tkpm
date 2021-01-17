@@ -1,0 +1,49 @@
+[
+  {
+    "type": "framework",
+    "value": "darknet"
+  },
+  {
+    "type": "command",
+    "value": "darknet"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "detector"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "test"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "obj.data"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "yolov3-4c-1000-max-steps-test.cfg"
+  },
+  {
+    "type": "param",
+    "parameter": "",
+    "value": "backup/yolov3-4c-4000-max-steps_last.weights"
+  },
+  {
+    "type": "input",
+    "parameter": ""
+  },
+  {
+    "type": "param",
+    "parameter": "-thresh",
+    "value": "0.2"
+  },
+  {
+    "type": "output",
+    "parameter": "",
+    "value": "predictions.jpg"
+  }
+]
