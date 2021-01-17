@@ -19,6 +19,7 @@ let loginForm = (username, password) => {
         if (this.readyState == 4 && this.status == 200) {
             let res = xhttp.response// Typical action to be performed when the document is ready:
             setCookie('token',res.token,2);
+            setCookie('username', username, 2);
             window.location.replace(hostURL)
         }
         else if (this.readyState == 4 && this.status == 401) {
