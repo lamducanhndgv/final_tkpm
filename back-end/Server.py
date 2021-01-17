@@ -431,7 +431,7 @@ def logout():
     #     username = get_username(request.headers['Authorization'])
 
     users.update_one(
-        {'username': session['username']},
+        {'username': username},
         {'$set': {
             'device_token': ''
             }
