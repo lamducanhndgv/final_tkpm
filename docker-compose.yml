@@ -14,7 +14,7 @@ services:
     ports:
       - "0.0.0.0:8888:8888"
     volumes:
-      - D:/final_tkpm/data:/data
+      - ${ABSOLUTE DIRECTION OF FOLDER CONTAIN docker-compose.yml}/data:/data # DIRECTION TO FOLDER
 
   tensorflow-pytorch-opencv-server:
     image: "lamducanhndgv/tkpm:tensorflow_pytorch_opencv"
@@ -25,8 +25,8 @@ services:
     networks:
       - tkpm-network
     volumes:
-      - D:/final_tkpm/data:/data
-      - D:/final_tkpm/inference-server:/main
+      - ${ABSOLUTE DIRECTION OF FOLDER CONTAIN docker-compose.yml}/data:/data  # DIRECTION TO FOLDER
+      - ${ABSOLUTE DIRECTION OF FOLDER CONTAIN docker-compose.yml}/inference-server:/main  # DIRECTION TO FOLDER
     command: python /main/main.py
 
 
@@ -39,8 +39,8 @@ services:
     networks:
       - tkpm-network
     volumes:
-      - D:/final_tkpm/data:/data
-      - D:/final_tkpm/inference-server:/main
+      - ${ABSOLUTE DIRECTION OF FOLDER CONTAIN docker-compose.yml}/data:/data
+      - ${ABSOLUTE DIRECTION OF FOLDER CONTAIN docker-compose.yml}/inference-server:/main
     command: python /main/main.py
 
   mongod:
@@ -59,4 +59,3 @@ networks:                             # Create network
     driver: bridge
   hostnet:
     external: true
-

@@ -2,13 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:application/network/server.dart';
 
 class UserService {
-  Future<Response> signIn(String user, String pass) {
+  Future<Response> signIn(String user, String pass,String tokenDevice) {
     print('Call sign in from user service');
     return DetectClient.instance.dio.post(
       '/login',
       data: {
         'username': user,
         'password': pass,
+        'device_token': tokenDevice,
       },
     );
   }

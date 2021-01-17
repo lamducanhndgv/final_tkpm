@@ -10,6 +10,7 @@ import 'package:application/shared/constant.dart';
 import 'package:application/shared/network_image.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
 import 'package:application/shared/widget/loading_task.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/user_service.dart';
@@ -47,9 +48,19 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _cServer = TextEditingController();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  var deviceToken;
+
+  _register() {
+    _firebaseMessaging.getToken().then((token) {
+      deviceToken = token;
+      print('here is your token: ' + deviceToken);
+    });
+  }
+
+
 
   handleLoginEvent(BaseEvent event) {
     if (event is LoginSuccessEvent) {
@@ -79,6 +90,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     print('init for ip ');
     initForOldIP();
+    _register();
   }
 
   bool _visible = false;
@@ -152,8 +164,8 @@ class _LoginPageState extends State<LoginPage> {
         Container(
           margin: const EdgeInsets.only(top: 10, left: 10),
           child: AnimatedOpacity(
-              // If the widget is visible, animate to 0.0 (invisible).
-              // If the widget is hidden, animate to 1.0 (fully visible).
+            // If the widget is visible, animate to 0.0 (invisible).
+            // If the widget is hidden, animate to 1.0 (fully visible).
               opacity: _visible ? 1.0 : 0.0,
               duration: Duration(milliseconds: 1000),
               // The green box must be a child of the AnimatedOpacity widget.
@@ -181,20 +193,21 @@ class _LoginPageState extends State<LoginPage> {
       initialData: false,
       value: bloc.btnChangeStream,
       child: Consumer<bool>(
-        builder: (context, enable, child) => FloatingActionButton(
-            heroTag: 'Server',
-            foregroundColor: Colors.black54,
-            backgroundColor: Colors.yellow[250],
-            elevation: 2.0,
-            child: Icon(FontAwesomeIcons.arrowRight),
-            onPressed: enable
-                ? () {
-                    bloc.event.add(ChangeIPEvent(newIP: _cServer.text));
-                    setState(() {
-                      _visible = !_visible;
-                    });
-                  }
-                : null),
+        builder: (context, enable, child) =>
+            FloatingActionButton(
+                heroTag: 'Server',
+                foregroundColor: Colors.black54,
+                backgroundColor: Colors.yellow[250],
+                elevation: 2.0,
+                child: Icon(FontAwesomeIcons.arrowRight),
+                onPressed: enable
+                    ? () {
+                  bloc.event.add(ChangeIPEvent(newIP: _cServer.text));
+                  setState(() {
+                    _visible = !_visible;
+                  });
+                }
+                    : null),
       ),
     );
   }
@@ -204,18 +217,19 @@ class _LoginPageState extends State<LoginPage> {
       initialData: null,
       value: bloc.ipStream,
       child: Consumer<String>(
-        builder: (context, msg, child) => TextField(
-          textInputAction: TextInputAction.go,
-          decoration: new InputDecoration(
-            hintText: "192.168.",
-            errorText: msg,
-          ),
-          controller: _cServer,
-          onChanged: (value) {
-            bloc.ipSink.add(value);
-          },
-          onSubmitted: (value) {},
-        ),
+        builder: (context, msg, child) =>
+            TextField(
+              textInputAction: TextInputAction.go,
+              decoration: new InputDecoration(
+                hintText: "192.168.",
+                errorText: msg,
+              ),
+              controller: _cServer,
+              onChanged: (value) {
+                bloc.ipSink.add(value);
+              },
+              onSubmitted: (value) {},
+            ),
       ),
     );
   }
@@ -246,7 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.blue.shade400,
                     ),
                     padding:
-                        EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
+                    EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
                   ),
                   _buildPassword(bloc),
                   Container(
@@ -254,7 +268,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.blue.shade400,
                     ),
                     padding:
-                        EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
+                    EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
                   ),
                   SizedBox(
                     height: 10.0,
@@ -297,21 +311,23 @@ class _LoginPageState extends State<LoginPage> {
       initialData: false,
       value: bloc.btnStream,
       child: Consumer<bool>(
-        builder: (context, enable, child) => RaisedButton(
-          onPressed: enable
-              ? () {
-                  print('clicked');
-                  bloc.event.add(SignInEvent(
+        builder: (context, enable, child) =>
+            RaisedButton(
+              onPressed: enable
+                  ? () {
+                print('clicked');
+                bloc.event.add(SignInEvent(
                     username: _usernameController.text,
                     pass: _passwordController.text,
-                  ));
-                }
-              : null,
-          shape:
+                    tokenDevice:deviceToken
+                ));
+              }
+                  : null,
+              shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
-          child: Text("Login", style: TextStyle(color: Colors.white70)),
-          color: Colors.blue,
-        ),
+              child: Text("Login", style: TextStyle(color: Colors.white70)),
+              color: Colors.blue,
+            ),
       ),
     );
   }
@@ -321,24 +337,25 @@ class _LoginPageState extends State<LoginPage> {
       initialData: null,
       value: bloc.usernameStream,
       child: Consumer<String>(
-        builder: (context, msg, child) => Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: TextField(
-              controller: _usernameController,
-              style: TextStyle(color: Colors.blue),
-              onChanged: (text) {
-                bloc.usernameSink.add(text);
-              },
-              decoration: InputDecoration(
-                  hintText: "Username",
-                  errorText: msg,
-                  hintStyle: TextStyle(color: Colors.blue.shade200),
-                  border: InputBorder.none,
-                  icon: Icon(
-                    Icons.account_circle,
-                    color: Colors.blue,
-                  )),
-            )),
+        builder: (context, msg, child) =>
+            Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: TextField(
+                  controller: _usernameController,
+                  style: TextStyle(color: Colors.blue),
+                  onChanged: (text) {
+                    bloc.usernameSink.add(text);
+                  },
+                  decoration: InputDecoration(
+                      hintText: "Username",
+                      errorText: msg,
+                      hintStyle: TextStyle(color: Colors.blue.shade200),
+                      border: InputBorder.none,
+                      icon: Icon(
+                        Icons.account_circle,
+                        color: Colors.blue,
+                      )),
+                )),
       ),
     );
   }
@@ -348,27 +365,28 @@ class _LoginPageState extends State<LoginPage> {
       initialData: null,
       value: bloc.passwordStream,
       child: Consumer<String>(
-        builder: (context, msg, child) => Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: TextField(
-              obscureText: true,
-              onChanged: (text) {
-                bloc.passwordSink.add(text);
-              },
-              onSubmitted: (text) {},
-              //Set listener for password
-              controller: _passwordController,
-              style: TextStyle(color: Colors.blue),
-              decoration: InputDecoration(
-                  hintText: "Password",
-                  errorText: msg,
-                  hintStyle: TextStyle(color: Colors.blue.shade200),
-                  border: InputBorder.none,
-                  icon: Icon(
-                    Icons.lock,
-                    color: Colors.blue,
-                  )),
-            )),
+        builder: (context, msg, child) =>
+            Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: TextField(
+                  obscureText: true,
+                  onChanged: (text) {
+                    bloc.passwordSink.add(text);
+                  },
+                  onSubmitted: (text) {},
+                  //Set listener for password
+                  controller: _passwordController,
+                  style: TextStyle(color: Colors.blue),
+                  decoration: InputDecoration(
+                      hintText: "Password",
+                      errorText: msg,
+                      hintStyle: TextStyle(color: Colors.blue.shade200),
+                      border: InputBorder.none,
+                      icon: Icon(
+                        Icons.lock,
+                        color: Colors.blue,
+                      )),
+                )),
       ),
     );
   }

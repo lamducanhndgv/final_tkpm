@@ -14,16 +14,21 @@ class UserRepo {
 
   UserRepo({@required UserService userService}) : this._userService = userService;
 
-  Future<User> signIn(String username, String pass) async {
+  Future<User> signIn(String username, String pass,String tokenDevice) async {
     // Callback
     print('Call signin from user repo');
     var c = Completer<User>();
     try {
-      var response = await _userService.signIn(username, pass);
+      var response = await _userService.signIn(username, pass,tokenDevice);
+      // response.data['notify_logs'] =''' [{"title":"title1", "body":"1"},{"title":"title2", "body":"2"},{"title":"title3", "body":"3"},{"title":"title4", "body":"5"}]''';
       var user = User.fromJson(response.data);
+      print(user);
       if (user != null) {
         SPref.instance.set(SPrefCache.KEY_TOKEN, user.token);
         SPref.instance.set(SPrefCache.MODEL_NAMES,user.modelNames);
+        SPref.instance.set(SPrefCache.USER_NAME,user.username);
+        print("Hello");
+        print(DetectClient.urlServer);
         SPref.instance.set(SPrefCache.CURRENT_IP_SERVER, DetectClient.urlServer);
         c.complete(user);
       }
@@ -50,6 +55,7 @@ class UserRepo {
         c.complete(true);
       }
       else{
+        print('Alooo');
         c.completeError('${response.data['message']}');
       }
     } on DioError catch (e) {

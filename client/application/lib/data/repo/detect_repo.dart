@@ -9,7 +9,14 @@ import 'package:flutter/widgets.dart';
 class DetectRepos{
   DetectService _detectService;
   DetectRepos({@required DetectService detectService}):_detectService = detectService;
-
+  Future<void> signOut(String username)async{
+    var c = Completer<void>();
+    try{
+      await _detectService.signOut(username);
+    }catch(e){
+      c.complete(e);
+    }
+  }
   Future<Uint8List> detectByImage(File imageFile, String model) async {
     print('Repos Detect by file');
     var c = Completer<Uint8List>();
