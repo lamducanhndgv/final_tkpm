@@ -253,6 +253,7 @@ def subscribe():
     if request.method == 'POST':
         data = json.loads(request.data)
         users = mongo.db.users
+        models = mongo.db.models
 
         current_user = data['current_user']
         subscribe_user = data['subscribe_user']
@@ -269,6 +270,15 @@ def subscribe():
         subscribe_user_token = subscribe_user_account['device_token']
         
         push_notify_subscribe(mongo.db, subscribe_user, title, message)
+
+        subscribe_models = models.find({'username': subscribe_user}, {'_id': 0, 'modelname': 1})
+        subscribe_models = list(subscribe_models)
+
+        records = []
+        for model in subscribe_models:
+            records.append({'username': current_user, 'modelname': '{}/{}'.format(subscribe_user, model['modelname'])})
+        
+        models.insert_many(records)
 
         return jsonify(status=200, message='Subscribe successfully!'), 200
 
@@ -383,16 +393,27 @@ def mainUrlDetection():
 def main2():
     # Get information from request
     img = request.files["image"].read();
-    model_name = request.form.to_dict(flat=False)['model'][0];
-    username = get_username(request.headers['Authorization'])
+    modelname = request.form.to_dict(flat=False)['model'][0];
+    model_name = modelname
+    tokens = modelname.split('/')
 
-    # Save data to storage
-    os.chdir(app.config["DATA_FOLDER"])
-    Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
+    if(len(tokens) == 1):
+        username = get_username(request.headers['Authorization'])
 
-    res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
+        # Save data to storage
+        os.chdir(app.config["DATA_FOLDER"])
+        Image.open(io.BytesIO(img)).save('users/{0}/images/{0}.jpg'.format(secure_filename(username)))
 
-    return make_bytes_response(res)
+        res = RequestInference(username, model_name, f"{secure_filename(username)}.jpg")()
+
+        return make_bytes_response(res)
+    elif(len(tokens)==2):
+        username = session['username']
+        # Save data to storage
+        os.chdir(app.config["DATA_FOLDER"])
+        Image.open(io.BytesIO(img)).save('users/{}/images/{}.jpg'.format(tokens[0], secure_filename(username)))
+
+        res = RequestInference(tokens[0], tokens[1], f"{secure_filename(username)}.jpg")()
 
 
 @app.route('/logout', methods=['POST'])
