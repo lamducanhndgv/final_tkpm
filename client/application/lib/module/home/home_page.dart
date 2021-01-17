@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:application/base/base_event.dart';
 import 'package:application/base/base_widget.dart';
 import 'package:application/data/remote/detect_service.dart';
@@ -15,12 +16,15 @@ import 'package:application/event/homepage_change_image_url_event.dart';
 import 'package:application/event/homepage_detect_image_complete.dart';
 import 'package:application/event/homepage_detect_image_error.dart';
 import 'package:application/event/homepage_detect_image_event.dart';
+import 'package:application/event/homepage_logout.dart';
+import 'package:application/module/dialog/Dialog.dart';
 import 'package:application/module/home/home_bloc.dart';
 import 'package:application/module/signin/signin_page.dart';
 import 'package:application/network/server.dart';
 import 'package:application/shared/constant.dart';
 import 'package:application/shared/widget/bloc_listener.dart';
 import 'package:application/shared/widget/loading_task.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
@@ -53,6 +57,7 @@ class Home extends StatelessWidget {
   }
 }
 
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -63,17 +68,52 @@ class _HomePageState extends State<HomePage> {
   File _imageFile;
   Uint8List _base64;
   StringBuffer _urlPicture;
-
+  String username;
   final Color color1 = Hexcolor("#9CC9F5"); //Color.fromRGBO(252, 119, 3, 1);
   final Color color2 = Colors.lightBlueAccent; //Color.fromRGBO(252, 244, 3, 1);
   TextEditingController _c;
-
   Uri apiUrl;
   String dropdownValue;
+  List<ModelNotification> listNotify; // = new List<ModelNotification>();
+  String stringListNotify;
 
   // var _isDetecting = false;
   var hasModels = false;
   List<String> listModelNames;
+  bool isHasNewNotify = false;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+  void firebaseMessagingConfigure() {
+    // _firebaseMessaging.getToken();
+    _firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print('HOMEPAGE: on message ${message['notification']}');
+          isHasNewNotify = true;
+          if (message['notification'] != null) {
+            _handleMessageNotification(message['notification']);
+          }
+          setState(() {});
+        },
+        // onBackgroundMessage: myBackgroundMessageHandler,
+        onResume: (Map<String, dynamic> message) async {
+          print('HOMEPAGE: on resume $message');
+          await SPref.instance.set("test2", "RESUME" + message.toString());
+        },
+        onLaunch: (Map<String, dynamic> message) async {
+          print('HOMEPAGE: on launch $message');
+          await SPref.instance.set("test", "LAUCH" + message.toString());
+        });
+  }
+
+  _handleMessageNotification(message) async {
+    ModelNotification notify = ModelNotification.fromJson(message);
+    listNotify.insert(0, notify);
+    var toAdd = "[" + notify.toString();
+    if (stringListNotify.length > 2) toAdd += ",";
+    stringListNotify = stringListNotify.replaceRange(0, 1, toAdd);
+    await SPref.instance.set(SPrefCache.NOTIFY_LOGS, stringListNotify);
+    print(stringListNotify);
+  }
 
   @override
   void initState() {
@@ -81,6 +121,25 @@ class _HomePageState extends State<HomePage> {
     checkLoginStatusAndIP();
     initForDropdown();
     super.initState();
+    initListNotify();
+    firebaseMessagingConfigure();
+  }
+
+  void initListNotify() async {
+    stringListNotify = await SPref.instance.get(SPrefCache.NOTIFY_LOGS);
+    if (stringListNotify == null || stringListNotify.length < 2) {
+      stringListNotify = "[]";
+      await SPref.instance.set(SPrefCache.NOTIFY_LOGS, stringListNotify);
+    }
+    if (stringListNotify != null) {
+      print(stringListNotify);
+      var list = jsonDecode(stringListNotify) as List;
+      listNotify =
+          list.map((tagJson) => ModelNotification.fromJson(tagJson)).toList();
+      print(listNotify);
+    }
+    print(await SPref.instance.get("test"));
+    print(await SPref.instance.get("test2"));
   }
 
   checkLoginStatusAndIP() async {
@@ -92,8 +151,8 @@ class _HomePageState extends State<HomePage> {
     }
     var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
     if (token == null || ip == null) {
-      if(token ==null) print('token null');
-      if(ip ==null) print('ip null');
+      if (token == null) print('token null');
+      if (ip == null) print('ip null');
       print("Token null or ip null");
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => SignIn()),
@@ -173,13 +232,21 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () {
                           showDialog(
                               child: Dialog(
+                                  child: Container(
+                                height: 200,
+                                margin: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(20.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  color: Colors.white,
+                                ),
                                 child: Column(
                                   children: <Widget>[
                                     _buildInputURL(context, bloc),
                                     _buildButtonUseImage(context, bloc)
                                   ],
                                 ),
-                              ),
+                              )),
                               context: context);
                         },
                       ),
@@ -205,6 +272,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildNotify(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20, right: 10),
+      width: 55,
+      child: Stack(
+        children: <Widget>[
+          IconButton(
+            color: isHasNewNotify ? Colors.green : Colors.black54,
+            icon: Icon(Icons.add_alert_sharp),
+            onPressed: () {
+              _customAlertDialog(context);
+              if (isHasNewNotify)
+                setState(() {
+                  isHasNewNotify = false;
+                });
+            },
+          ),
+          if (isHasNewNotify)
+            Positioned(
+              child: Text(
+                "New",
+                style: TextStyle(color: Colors.red),
+              ),
+              top: 2,
+              left: 25,
+            )
+        ],
+      ),
+    );
+  }
+
   Row _buildChooseModelAndLogout(HomePageBloc bloc, BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -213,13 +311,17 @@ class _HomePageState extends State<HomePage> {
       children: [
         if (hasModels == true) _buildDropdownList(bloc),
         new Spacer(),
+        // new Spacer(),
+        _buildNotify(context),
         Container(
-          margin: const EdgeInsets.only(top: 30, right: 10),
+          margin: const EdgeInsets.only(top: 20, right: 10),
           child: FlatButton(
             onPressed: () {
               SPref.instance.set(SPrefCache.KEY_TOKEN, null);
               SPref.instance.set(SPrefCache.MODEL_NAMES, null);
               SPref.instance.set(SPrefCache.USER_NAME, null);
+              SPref.instance.set(SPrefCache.NOTIFY_LOGS, null);
+              bloc.event.add(LogoutEvent(username:username));
               Navigator.pushReplacementNamed(context, '/home');
             },
             shape: RoundedRectangleBorder(
@@ -230,6 +332,19 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  _customAlertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomAlertDialog(
+          title: "Notification",
+          content: "Information to your user describing the situation.",
+          listNotify: listNotify,
+        );
+      },
     );
   }
 
@@ -252,26 +367,33 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Choose your image'),
-            content: SingleChildScrollView(
-                child: ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: Text("Gallery"),
-                  onTap: () {
-                    bloc.event.add(ChangeImgInGallery(context: context));
-                  },
+              title: Text('Choose your image'),
+              content: Container(
+                margin: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: Colors.white,
                 ),
-                Padding(padding: EdgeInsets.all(8)),
-                GestureDetector(
-                  child: Text("Camera"),
-                  onTap: () {
-                    bloc.event.add(ChangeImgByCamera(context: context));
-                  },
-                )
-              ],
-            )),
-          );
+                child: SingleChildScrollView(
+                    child: ListBody(
+                  children: <Widget>[
+                    GestureDetector(
+                      child: Text("Gallery"),
+                      onTap: () {
+                        bloc.event.add(ChangeImgInGallery(context: context));
+                      },
+                    ),
+                    Padding(padding: EdgeInsets.all(8)),
+                    GestureDetector(
+                      child: Text("Camera"),
+                      onTap: () {
+                        bloc.event.add(ChangeImgByCamera(context: context));
+                      },
+                    )
+                  ],
+                )),
+              ));
         });
   }
 
@@ -485,9 +607,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   initForDropdown() async {
+    username = await SPref.instance.get(SPrefCache.USER_NAME).toString();
     String stringModelNames = await SPref.instance.get(SPrefCache.MODEL_NAMES);
     if (stringModelNames != null) {
-      print("LIST NOT NULL");
       listModelNames = stringModelNames.split(",");
       dropdownValue = listModelNames[0];
       hasModels = true;

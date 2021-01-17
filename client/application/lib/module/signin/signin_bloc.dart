@@ -107,6 +107,7 @@ class SignInBloc extends BaseBloc {
   handleChangeIPEvent(BaseEvent event) async {
     ChangeIPEvent e = event as ChangeIPEvent;
     print('Call change from bloc');
+    print(e.newIP);
     await _userRepo.changeServerAddress(e.newIP);
     processSink.add(ChangeIPComplete());
   }
@@ -114,9 +115,8 @@ class SignInBloc extends BaseBloc {
   handleSignInEvent(event) {
     btnSink.add(false);
     loadingSink.add(true);
-
     SignInEvent e = event as SignInEvent;
-    _userRepo.signIn(e.username, e.pass).then((user) {
+    _userRepo.signIn(e.username, e.pass,e.tokenDevice).then((user) {
       btnSink.add(true);
       loadingSink.add(false);
       processSink.add(LoginSuccessEvent(user));

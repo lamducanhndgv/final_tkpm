@@ -25,4 +25,14 @@ class DetectService {
         data: {"url": url, "model": model},
         options: Options(responseType: ResponseType.bytes));
   }
+
+  Future<Response> signOut(String user) {
+    print('Call sign in from user service');
+    return DetectClient.instance.dio.post(
+      '/logout',
+      data: {
+        'username': user,
+      },
+    );
+  }
 }
