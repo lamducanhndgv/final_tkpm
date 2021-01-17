@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <h1>{% block title %}AI model bot{% endblock %}</h1>
+<h1>{% block title %}AI model bot{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-    <div class="limiter">
-		<div id="background">
+<div class="limiter">
+    <div id="background">
 
-            <div class="header mb-5 mt-5">
-                <div class="username">
-                    <h1>{{name}}</h1>
-                </div>
-                <a href="/">HOME</a>
-                <button id="logout-btn" class='logout-btn ml-5'>Logout</button>
-                <a href="/update">UPDATE</a>
+        <div class="header mb-5 mt-5">
+            <div class="username">
+                <h1 id="h_username">{{name}}</h1>
             </div>
+            <a href="/">HOME</a>
+            <button id="logout-btn" class='logout-btn ml-5'>Logout</button>
+            <a href="/update">UPDATE</a>
+        </div>
 
-            <div class="d-flex flex-row">
-                <select id="user-selection">
-                    <option disabled selected value>Select user</option>
-                    {% for user in users %}
-                        <option value = {{user.username}}>{{user.username}}</option>
-                    {% endfor %}
-                </select>
+        <div class="d-flex flex-row">
+            <select id="user-selection">
+                <option disabled selected value>Select user</option>
+                {% for user in users %}
+                <option value={{user.username}}>{{user.username}}</option>
+                {% endfor %}
+            </select>
 
-                <button type="button" class="btn ml-2 btn-warning" id="subscribe-btn">Subscribe</button>
-            </div>
+            <button type="button" class="btn ml-2 btn-warning" id="subscribe-btn">Subscribe</button>
+        </div>
 
-		</div>
-	</div>
+    </div>
+</div>
 {% endblock %}
