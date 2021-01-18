@@ -86,6 +86,17 @@ def post_index():
 
     models.insert_one({'username': session['username'], 'modelname': model_name})
 
+    records = []
+    user = users.find_one({'username': session['username']}, {'_id': 0, 'others': 1, 'username': 1})
+    subscribers = list(user['others'])
+
+    for subscriber in subscribers:
+        records.append({'username': subscriber, 'modelname': '{}/{}'.format(user['username'], model_name)})
+
+    if(len(records) > 0):
+        models.insert_many(records)
+
+
     # get user device tokens to push notify
     device_tokens_cursor = users.aggregate([
         {
@@ -432,11 +443,11 @@ def logout():
 
     try:
         username = session['username']
-    except:
-        data = json.loads(request.data)
-        username = data['username']
     # except:
-    #     username = get_username(request.headers['Authorization'])
+        # data = json.loads(request.data)
+        # username = data['username']
+    except:
+        username = get_username(request.headers['Authorization'])
 
     users.update_one(
         {'username': username},
