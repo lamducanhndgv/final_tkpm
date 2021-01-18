@@ -155,11 +155,8 @@ class HomePageBloc extends BaseBloc {
   }
 
   void handleLogout(BaseEvent event) async {
-    LogoutEvent e = event as LogoutEvent;
-    if(e.username!=null){
-      _detectRepos.signOut(e.username).catchError((e){
+      _detectRepos.signOut().catchError((e){
         print('Logout Error: '+ e.toString());
       });
     }
-  }
 }

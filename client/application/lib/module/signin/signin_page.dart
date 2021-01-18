@@ -88,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    print('init for ip ');
     initForOldIP();
     _register();
   }

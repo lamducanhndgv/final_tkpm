@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 class DetectClient {
   static const PORT = '8888';
   // static var urlServer = 'http://192d8f4e5f97.ngrok.io';
-  static var urlServer = 'http://192.168.1.4:${PORT}';
+  static var urlServer = 'http://192.168.1.6:${PORT}';
   static BaseOptions _options = new BaseOptions(
     baseUrl: urlServer,
     connectTimeout: 20000,
@@ -25,7 +25,9 @@ class DetectClient {
       return option;
     }));
   }
-
+  void setHeadersAuthorization(String token){
+    DetectClient._internal().dio.options.headers["Authorization"]= token;
+  }
   static final DetectClient instance = DetectClient._internal();
 
   static setServerIP(String newIP) {

@@ -68,7 +68,6 @@ class _HomePageState extends State<HomePage> {
   File _imageFile;
   Uint8List _base64;
   StringBuffer _urlPicture;
-  String username;
   final Color color1 = Hexcolor("#9CC9F5"); //Color.fromRGBO(252, 119, 3, 1);
   final Color color2 = Colors.lightBlueAccent; //Color.fromRGBO(252, 244, 3, 1);
   TextEditingController _c;
@@ -108,6 +107,12 @@ class _HomePageState extends State<HomePage> {
   _handleMessageNotification(message) async {
     ModelNotification notify = ModelNotification.fromJson(message);
     listNotify.insert(0, notify);
+    if(notify.title =="Upload"){
+      int idx = notify.body.indexOf("has just");
+      String username =notify.body.substring(5,idx-1);
+      String modelName = notify.body.substring(idx+18,notify.body.indexOf("model. Check")-1);
+      listModelNames.add(username+"/" + modelName);
+    }
     var toAdd = "[" + notify.toString();
     if (stringListNotify.length > 2) toAdd += ",";
     stringListNotify = stringListNotify.replaceRange(0, 1, toAdd);
@@ -117,6 +122,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    print('init state');
     _urlPicture = null; //new StringBuffer();
     checkLoginStatusAndIP();
     initForDropdown();
@@ -133,13 +139,13 @@ class _HomePageState extends State<HomePage> {
     }
     if (stringListNotify != null) {
       print(stringListNotify);
-      var list = jsonDecode(stringListNotify) as List;
+      print("hihi");
+      var list = json.decode(stringListNotify) as List;
+      print("AAAa");
       listNotify =
           list.map((tagJson) => ModelNotification.fromJson(tagJson)).toList();
       print(listNotify);
     }
-    print(await SPref.instance.get("test"));
-    print(await SPref.instance.get("test2"));
   }
 
   checkLoginStatusAndIP() async {
@@ -151,8 +157,6 @@ class _HomePageState extends State<HomePage> {
     }
     var token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
     if (token == null || ip == null) {
-      if (token == null) print('token null');
-      if (ip == null) print('ip null');
       print("Token null or ip null");
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => SignIn()),
@@ -169,7 +173,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   _buildHomepageView(BuildContext context) {
-    print('Set state again');
     return Provider<HomePageBloc>.value(
       value: HomePageBloc(detectRepos: Provider.of(context)),
       child: Consumer<HomePageBloc>(
@@ -321,7 +324,7 @@ class _HomePageState extends State<HomePage> {
               SPref.instance.set(SPrefCache.MODEL_NAMES, null);
               SPref.instance.set(SPrefCache.USER_NAME, null);
               SPref.instance.set(SPrefCache.NOTIFY_LOGS, null);
-              bloc.event.add(LogoutEvent(username:username));
+              bloc.event.add(LogoutEvent());
               Navigator.pushReplacementNamed(context, '/home');
             },
             shape: RoundedRectangleBorder(
@@ -607,12 +610,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   initForDropdown() async {
-    username = await SPref.instance.get(SPrefCache.USER_NAME).toString();
+    await setAuthorization();
     String stringModelNames = await SPref.instance.get(SPrefCache.MODEL_NAMES);
     if (stringModelNames != null) {
+      print('helllzzz');
       listModelNames = stringModelNames.split(",");
-      dropdownValue = listModelNames[0];
+      print(listModelNames);
+      dropdownValue = listModelNames[0].toString();
       hasModels = true;
+      setState(() {
+      });
     }
+  }
+
+  Future setAuthorization() async {
+    String token = await SPref.instance.get(SPrefCache.KEY_TOKEN);
+    DetectClient.instance.setHeadersAuthorization(token);
   }
 }

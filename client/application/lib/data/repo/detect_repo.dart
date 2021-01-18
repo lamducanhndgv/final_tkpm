@@ -9,10 +9,10 @@ import 'package:flutter/widgets.dart';
 class DetectRepos{
   DetectService _detectService;
   DetectRepos({@required DetectService detectService}):_detectService = detectService;
-  Future<void> signOut(String username)async{
+  Future<void> signOut()async{
     var c = Completer<void>();
     try{
-      await _detectService.signOut(username);
+      await _detectService.signOut();
     }catch(e){
       c.complete(e);
     }
